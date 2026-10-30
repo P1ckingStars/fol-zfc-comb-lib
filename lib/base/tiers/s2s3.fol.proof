@@ -1,0 +1,291 @@
+proof lem:
+    _n = assume (~ (Q | (~ Q)))
+    _q = assume Q
+    _d = let (~ Q)
+    _o = or_intro_l _q, _d
+    _b = not_elim _n, _o
+    _nq = not_intro _b
+    _d2 = let Q
+    _o2 = or_intro_r _d2, _nq
+    _b2 = not_elim _n, _o2
+    _nn = not_intro _b2
+    _r = double_neg_elim _nn
+    qed _r
+
+proof compose_ex:
+    _hf = assume (forall x. (set(x) -> (exists t. (set(t) & F(x,t)))))
+    _hh = assume (forall t. (set(t) -> (exists r. (set(r) & H(t,r)))))
+    fix x
+    _sx = assume set(x)
+    _a1 = forall_elim _hf, x
+    _a2 = implies_elim _a1, _sx
+    _et = exists_elim _a2, t
+    _st = and_elim_l _et
+    _ft = and_elim_r _et
+    _b1 = forall_elim _hh, t
+    _b2 = implies_elim _b1, _st
+    _er = exists_elim _b2, r
+    _sr = and_elim_l _er
+    _hr = and_elim_r _er
+    _k1 = and_intro _ft, _hr
+    _k2 = and_intro _st, _k1
+    _e1 = exists_intro _k2, t
+    _k3 = and_intro _sr, _e1
+    _e2 = exists_intro _k3, r
+    _cl1 = exists_intro _e2
+    _cl2 = exists_intro _cl1
+    _i = implies_intro _cl2
+    _g = forall_intro _i
+    _i1 = implies_intro _g
+    _i2 = implies_intro _i1
+    qed _i2
+
+proof compose_uniq:
+    _sym = use eq_symm
+    _uf = assume (forall x. (set(x) -> (forall t. (set(t) -> (forall t2. (set(t2) -> (F(x,t) -> (F(x,t2) -> eq(t,t2)))))))))
+    _uh = assume (forall t. (set(t) -> (forall r. (set(r) -> (forall r2. (set(r2) -> (H(t,r) -> (H(t,r2) -> eq(r,r2)))))))))
+    _ch = assume (forall a. (set(a) -> (forall b. (set(b) -> (forall r. (set(r) -> (eq(a,b) -> (H(a,r) -> H(b,r)))))))))
+    fix x
+    _sx = assume set(x)
+    fix r
+    _sr = assume set(r)
+    fix r2
+    _sr2 = assume set(r2)
+    _g1 = assume (exists t. (set(t) & (F(x,t) & H(t,r))))
+    _g2 = assume (exists t. (set(t) & (F(x,t) & H(t,r2))))
+    _e1 = exists_elim _g1, t1
+    _st1 = and_elim_l _e1
+    _rr1 = and_elim_r _e1
+    _ft1 = and_elim_l _rr1
+    _ht1 = and_elim_r _rr1
+    _e2 = exists_elim _g2, t2
+    _st2 = and_elim_l _e2
+    _rr2 = and_elim_r _e2
+    _ft2 = and_elim_l _rr2
+    _ht2 = and_elim_r _rr2
+    _u1 = forall_elim _uf, x
+    _u1g = implies_elim _u1, _sx
+    _u2 = forall_elim _u1g, t1
+    _u2g = implies_elim _u2, _st1
+    _u3 = forall_elim _u2g, t2
+    _u3g = implies_elim _u3, _st2
+    _u7 = implies_elim _u3g, _ft1
+    _eqt = implies_elim _u7, _ft2
+    _sy1 = forall_elim _sym, t1
+    _sy2 = forall_elim _sy1, t2
+    _eqt21 = implies_elim _sy2, _eqt
+    _c1 = forall_elim _ch, t2
+    _c1g = implies_elim _c1, _st2
+    _c2 = forall_elim _c1g, t1
+    _c2g = implies_elim _c2, _st1
+    _c3 = forall_elim _c2g, r2
+    _c3g = implies_elim _c3, _sr2
+    _c7 = implies_elim _c3g, _eqt21
+    _ht1r2 = implies_elim _c7, _ht2
+    _h1 = forall_elim _uh, t1
+    _h1g = implies_elim _h1, _st1
+    _h2 = forall_elim _h1g, r
+    _h2g = implies_elim _h2, _sr
+    _h3 = forall_elim _h2g, r2
+    _h3g = implies_elim _h3, _sr2
+    _h7 = implies_elim _h3g, _ht1
+    _res = implies_elim _h7, _ht1r2
+    _cl1 = exists_intro _res
+    _cl2 = exists_intro _cl1
+    _i1 = implies_intro _cl2
+    _i2 = implies_intro _i1
+    _k1 = implies_intro _i2
+    _q1 = forall_intro _k1
+    _k2 = implies_intro _q1
+    _q2 = forall_intro _k2
+    _k3 = implies_intro _q2
+    _q3 = forall_intro _k3
+    _j1 = implies_intro _q3
+    _j2 = implies_intro _j1
+    _j3 = implies_intro _j2
+    qed _j3
+
+proof compose_cong:
+    _cf = assume (forall a. (set(a) -> (forall b. (set(b) -> (forall t. (set(t) -> (eq(a,b) -> (F(a,t) -> F(b,t)))))))))
+    fix a
+    _sa = assume set(a)
+    fix b
+    _sb = assume set(b)
+    fix r
+    _sr = assume set(r)
+    _he = assume eq(a,b)
+    _hg = assume (exists t. (set(t) & (F(a,t) & H(t,r))))
+    _et = exists_elim _hg, t
+    _st = and_elim_l _et
+    _rr = and_elim_r _et
+    _fa = and_elim_l _rr
+    _hr = and_elim_r _rr
+    _c1 = forall_elim _cf, a
+    _c1g = implies_elim _c1, _sa
+    _c2 = forall_elim _c1g, b
+    _c2g = implies_elim _c2, _sb
+    _c3 = forall_elim _c2g, t
+    _c3g = implies_elim _c3, _st
+    _c7 = implies_elim _c3g, _he
+    _fb = implies_elim _c7, _fa
+    _k1 = and_intro _fb, _hr
+    _k2 = and_intro _st, _k1
+    _ex = exists_intro _k2, t
+    _cl = exists_intro _ex
+    _i1 = implies_intro _cl
+    _i2 = implies_intro _i1
+    _k1 = implies_intro _i2
+    _q1 = forall_intro _k1
+    _k2 = implies_intro _q1
+    _q2 = forall_intro _k2
+    _k3 = implies_intro _q2
+    _q3 = forall_intro _k3
+    _j = implies_intro _q3
+    qed _j
+
+proof replace_fun:
+    _es = use eq_symm
+    _et = use eq_trans
+    fix F
+    _h = assume (forall x. (set(x) -> (forall y. (set(y) -> (pmem(x,y,F) <-> ((exists z. (set(z) & (Psi(x,z) & (forall w. (set(w) -> (Psi(x,w) -> eq(z,w))))))) & Psi(x,y)))))))
+    fix u
+    _su = assume set(u)
+    fix v
+    _sv = assume set(v)
+    fix v2
+    _sv2 = assume set(v2)
+    _p1 = assume pmem(u,v,F)
+    _p2 = assume pmem(u,v2,F)
+    _a1 = forall_elim _h, u
+    _a2 = implies_elim _a1, _su
+    _a3 = forall_elim _a2, v
+    _a4 = implies_elim _a3, _sv
+    _c1 = iff_elim_l _a4, _p1
+    _ex = and_elim_l _c1
+    _psi1 = and_elim_r _c1
+    _b1 = forall_elim _a2, v2
+    _b2 = implies_elim _b1, _sv2
+    _c2 = iff_elim_l _b2, _p2
+    _psi2 = and_elim_r _c2
+    _ez = exists_elim _ex, z
+    _sz = and_elim_l _ez
+    _rest = and_elim_r _ez
+    _pz = and_elim_l _rest
+    _uq = and_elim_r _rest
+    _u1 = forall_elim _uq, v
+    _u2 = implies_elim _u1, _sv
+    _zv = implies_elim _u2, _psi1
+    _w1 = forall_elim _uq, v2
+    _w2 = implies_elim _w1, _sv2
+    _zv2 = implies_elim _w2, _psi2
+    _s1 = forall_elim _es, z
+    _s2 = forall_elim _s1, v
+    _vz = implies_elim _s2, _zv
+    _t1 = forall_elim _et, v
+    _t2 = forall_elim _t1, z
+    _t3 = forall_elim _t2, v2
+    _t4 = implies_elim _t3, _vz
+    _res = implies_elim _t4, _zv2
+    _cl = exists_intro _res
+    _i1 = implies_intro _cl
+    _i2 = implies_intro _i1
+    _i3 = implies_intro _i2
+    _g1 = forall_intro _i3
+    _i4 = implies_intro _g1
+    _g2 = forall_intro _i4
+    _i5 = implies_intro _g2
+    _g3 = forall_intro _i5
+    _ih = implies_intro _g3
+    _gf = forall_intro _ih
+    qed _gf
+
+proof guard_from_ex_uniq:
+    _er = use eq_refl
+    _es = use eq_symm
+    _et = use eq_trans
+    _hex = assume (forall u. (set(u) -> (exists r. (set(r) & Psi(u,r)))))
+    _huq = assume (forall u. (set(u) -> (forall r. (set(r) -> (forall r2. (set(r2) -> (Psi(u,r) -> (Psi(u,r2) -> eq(r,r2)))))))))
+    fix u
+    _su = assume set(u)
+    _e1 = forall_elim _hex, u
+    _e2 = implies_elim _e1, _su
+    _ez = exists_elim _e2, r
+    _sr = and_elim_l _ez
+    _pr = and_elim_r _ez
+    _rr = forall_elim _er, r
+    fix z0
+    _hz = assume eq(z0, r)
+    _z1 = and_intro _pr, _hz
+    _z2 = and_intro _sr, _z1
+    _zE = exists_intro _z2, r
+    _zi = implies_intro _zE
+    _zg = forall_intro _zi
+    _za = forall_elim _zg, r
+    _Er = implies_elim _za, _rr
+    fix w
+    _sw = assume set(w)
+    _hw = assume (exists v. (set(v) & (Psi(u,v) & eq(w,v))))
+    _wv = exists_elim _hw, v0
+    _sv0 = and_elim_l _wv
+    _rest = and_elim_r _wv
+    _pv0 = and_elim_l _rest
+    _ewv0 = and_elim_r _rest
+    _u1 = forall_elim _huq, u
+    _u2 = implies_elim _u1, _su
+    _u3 = forall_elim _u2, r
+    _u4 = implies_elim _u3, _sr
+    _u5 = forall_elim _u4, v0
+    _u6 = implies_elim _u5, _sv0
+    _u7 = implies_elim _u6, _pr
+    _rv0 = implies_elim _u7, _pv0
+    _s1 = forall_elim _es, w
+    _s2 = forall_elim _s1, v0
+    _v0w = implies_elim _s2, _ewv0
+    _t1 = forall_elim _et, r
+    _t2 = forall_elim _t1, v0
+    _t3 = forall_elim _t2, w
+    _t4 = implies_elim _t3, _rv0
+    _rw = implies_elim _t4, _v0w
+    _cl = exists_intro _rw
+    _i1 = implies_intro _cl
+    _i2 = implies_intro _i1
+    _g1 = forall_intro _i2
+    _b1 = and_intro _Er, _g1
+    _b2 = and_intro _sr, _b1
+    _res = exists_intro _b2
+    _i3 = implies_intro _res
+    _g2 = forall_intro _i3
+    _i4 = implies_intro _g2
+    _i5 = implies_intro _i4
+    qed _i5
+
+proof compose_ex_dom:
+    _hf = assume (forall x. (set(x) -> (exists t. (set(t) & (F(x,t) & D(t))))))
+    _hh = assume (forall t. (set(t) -> (D(t) -> (exists r. (set(r) & H(t,r))))))
+    fix x
+    _sx = assume set(x)
+    _a1 = forall_elim _hf, x
+    _a2 = implies_elim _a1, _sx
+    _et = exists_elim _a2, t
+    _st = and_elim_l _et
+    _fd = and_elim_r _et
+    _ft = and_elim_l _fd
+    _dt = and_elim_r _fd
+    _b1 = forall_elim _hh, t
+    _b2 = implies_elim _b1, _st
+    _b3 = implies_elim _b2, _dt
+    _er = exists_elim _b3, r
+    _sr = and_elim_l _er
+    _hr = and_elim_r _er
+    _k1 = and_intro _ft, _hr
+    _k2 = and_intro _st, _k1
+    _e1 = exists_intro _k2, t
+    _k3 = and_intro _sr, _e1
+    _e2 = exists_intro _k3, r
+    _cl1 = exists_intro _e2
+    _cl2 = exists_intro _cl1
+    _i = implies_intro _cl2
+    _g = forall_intro _i
+    _i1 = implies_intro _g
+    _i2 = implies_intro _i1
+    qed _i2

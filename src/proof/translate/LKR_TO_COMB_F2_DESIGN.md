@@ -334,7 +334,7 @@ Completeness gates for declaring F2 done:
    row to done).
 
 Stretch (post-F2, separate obligation): run all theorems in
-`zfc/basics/ordered_pair.fol.proof` and `functions.fol.proof` through
+`test/corpus/basics/ordered_pair.fol.proof` and `functions.fol.proof` through
 the full pipeline.
 
 ## 9. Edge cases

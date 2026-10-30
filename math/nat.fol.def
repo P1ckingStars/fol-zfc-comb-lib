@@ -1,0 +1,4 @@
+# nat has a member: 0, by the translated Nat.nat_0I. A statement over the library's constants reads as the library
+# states them, each named by a variable its predicate fixes: z is 0, n is nat.
+
+claim nat_inhabited: forall z. (set(z) -> (ZF_Base.zero(z) -> (forall n. (set(n) -> (Nat.nat(n) -> (exists m. (set(m) & elem(m, n))))))))

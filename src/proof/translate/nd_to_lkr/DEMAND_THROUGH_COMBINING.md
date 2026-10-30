@@ -180,8 +180,8 @@ The fix is accepted when:
 1. All tests in `test/cut_minimal_demand_through_combining_test.cpp`
    pass (sound, complete on the spec matrix).
 2. Existing `cut_minimal_*_test` suites stay green (no regression).
-3. `comb_checker zfc/basics/ordered_pair.fol.def
-   zfc/basics/ordered_pair.fol.proof zfc/basics/axioms.fol.def`
+3. `comb_checker test/corpus/basics/ordered_pair.fol.def
+   test/corpus/basics/ordered_pair.fol.proof test/corpus/basics/axioms.fol.def`
    reaches ≥ historical parity (≥ 6/19 OK; aim 19/19).
 
 Per [[math-first-discipline]]: tests land first (RED), then impl

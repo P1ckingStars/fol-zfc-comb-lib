@@ -4,9 +4,9 @@ fol_library(
     name = "induction_lib",
     header = "induction.fol.def",
     deps = [
-        "//zfc/basics:functions_lib",
-        "//zfc/basics:set_operations_lib",
-        "//zfc/basics:subset_lib",
+        "//test/corpus/basics:functions_lib",
+        "//test/corpus/basics:set_operations_lib",
+        "//test/corpus/basics:subset_lib",
     ],
 )
 
@@ -15,9 +15,9 @@ fol_proof(
     header = "induction.fol.def",
     proof = "induction.fol.proof",
     deps = [
-        "//zfc/basics:functions",
-        "//zfc/basics:set_operations",
-        "//zfc/basics:subset",
+        "//test/corpus/basics:functions",
+        "//test/corpus/basics:set_operations",
+        "//test/corpus/basics:subset",
     ],
 )
 

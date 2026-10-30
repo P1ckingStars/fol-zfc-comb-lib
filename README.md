@@ -5,13 +5,13 @@ A natural deduction theorem prover for first-order logic with ZFC set theory axi
 ## Features
 
 - **First-Order Logic**: Full support for universal and existential quantifiers
-- **ZFC Set Theory**: Complete ZFC axioms (extensionality through choice)
+- **ZFC Set Theory**: Isabelle/ZF translated over an NBG foundation, conservative over ZFC (`lib/README.md`)
 - **Formula Parser**: Flex/Bison parser supporting multiple syntax styles
 - **Natural Deduction**: Complete rule set including classical logic (excluded middle, double negation elimination)
 - **Proof Scripts**: Write and verify proofs in `.fol.def` / `.fol.proof` files
 - **Definition Annotations**: `@def(predicate)` marks axioms as definitions and prevents redefinition
 - **Bazel Proof Verification**: Custom Bazel rules for incremental proof checking with dependency tracking
-- **Equality**: Axiomatized in pure FOL by `extensionality` and `elem_subst`; substitution goes through library lemmas such as `eq_elem_l`, `eq_elem_r` and `rel_elem_eq`
+- **Equality**: Axiomatized in pure FOL by `extensionality` and `elem_first_subst`; substitution goes through lemmas such as `elem_second`
 
 ## Building
 
@@ -26,8 +26,9 @@ bazel test //test:core_test       # Core logic tests
 bazel test //test:runtime_test    # Runtime and proof execution tests
 
 # Verify proofs via Bazel
-bazel build //zfc/basics:ordered_pair    # Verify ordered pair proofs (15 theorems)
-bazel build //zfc/basics:functions       # Verify function proofs (5 theorems)
+bazel build //lib:base            # Check the NBG foundation
+bazel build @zf//:parts           # Check the whole translated library
+bazel build //math/...            # Check new mathematics and the parts it cites
 ```
 
 ## Formula Syntax
@@ -184,39 +185,32 @@ src/
 │   └── logging.h         # Logging utilities
 
 build/
-└── fol.bzl               # Bazel rules: fol_library, fol_proof
+├── fol.bzl               # Bazel rules: fol_library, fol_proof, fol_group
+└── fol_unit.bzl          # Repository rule: a translated unit as fol_proof targets
+
+lib/
+├── README.md             # What the library is, how to read it, how to re-pin it
+├── base/                 # NBG foundation: the 19 axioms and 13 tiers (from isa2fol)
+└── zf.sha256             # Pin of the translated unit, which stays out of git
+
+math/                     # New mathematics, built on the library
 
 test/
 ├── core_test.cpp         # Core logic tests
-└── runtime_test.cpp      # Runtime and proof execution tests
-
-zfc/
-└── basics/
-    ├── axioms.fol.def             # ZFC axioms 1-8
-    ├── ordered_pair.fol.def       # Kuratowski ordered pair definitions + claims
-    ├── ordered_pair.fol.proof     # Ordered pair proofs (15 theorems)
-    ├── functions.fol.def          # Functions as sets of ordered pairs + claims
-    ├── functions.fol.proof        # Function proofs (5 theorems)
-    ├── replacement_choice.fol.def # ZFC axioms 9-10 (replacement, choice)
+├── runtime_test.cpp      # Runtime and proof execution tests
+└── corpus/               # The hand-written proofs the library replaced; a regression corpus
 ```
 
-## ZFC Axioms
+## Axioms
 
-The prover includes all 10 ZFC axioms:
+Single-sorted NBG with global choice, conservative over ZFC: 19 axioms in `lib/base/axioms.fol.def`.
 
-In `basics/axioms.fol.def`:
-1. **Extensionality** — Sets with same elements are equal
-2. **Empty Set** — Existence of empty set
-3. **Pairing** — For any a, b, the set {a, b} exists
-4. **Union** — For any set, its union exists
-5. **Power Set** — For any set, its power set exists
-6. **Infinity** — An infinite set exists
-7. **Foundation** — No infinite descending membership chains
-8. **Separation** — For any set and property, the subset satisfying it exists
-
-In `basics/replacement_choice.fol.def` (depends on functions):
-9. **Replacement** — Image of a set under a function exists
-10. **Choice** — Every collection of non-empty sets has a choice function
+- **Encoding** — `members_are_sets`, `elem_first_subst`
+- **Extensionality** — As a biconditional
+- **Class existence** — Goedel's `B1`-`B7`
+- **Set existence** — `empty`, `pairing`, `union`, `power`, `infinity`, `replacement`, `separation`
+- **Regularity** — Mendelson's axiom D
+- **Choice** — Goedel's axiom E
 
 ## Examples
 
@@ -272,7 +266,7 @@ proof domain_elem:
 
 ### Equality Substitution
 
-There is no built-in substitution rule. Equality is axiomatized by `extensionality` and `elem_subst` (`zfc/basics/axioms.fol.def`), and substitution goes through derived lemmas: `eq_elem_l` and `eq_elem_r` for the two positions of `elem`, `pair_eq_a` and `pair_eq_b` for ordered pairs, and `rel_elem_eq` for relations. Each use instantiates the lemma with `forall_elim`, builds its premise with `and_intro`, and applies it with `implies_elim`:
+There is no built-in substitution rule. Equality is axiomatized by `extensionality` and `elem_first_subst` (`lib/base/axioms.fol.def`), and substitution goes through lemmas: `elem_first_subst` and `elem_second` for each position of `elem`, `set_cong` for `set`. A proof about a defined predicate unfolds its `@def` axiom, substitutes inside, and folds back. This example, from `test/corpus/basics/`, substitutes through lemmas of its own:
 
 ```fol
 # Prove: rel_elem is preserved under equal inputs/outputs
@@ -306,9 +300,7 @@ proof rel_elem_eq:
 
 ### What's Been Proved
 
-The `zfc/basics/` directory contains 20 verified theorems:
-- **Ordered pairs** (15 theorems) — Kuratowski encoding `(a, b) = {{a}, {a, b}}` with full injectivity: `pair(p, a, b) & pair(q, c, d) & eq(p, q) -> eq(a, c) & eq(b, d)`
-- **Functions** (5 theorems) — Functions as sets of ordered pairs: uniqueness, domain/range membership, injectivity
+The library holds Isabelle/ZF's theory, ordinals to integer division, translated and checked by this kernel: `lib/README.md` has the count. `math/` builds on it.
 
 ## Bazel Proof Rules
 
@@ -317,25 +309,25 @@ Custom Bazel rules in `build/fol.bzl` enable incremental proof verification:
 ```python
 # Header-only target (axioms + claims, no proofs)
 fol_library(
-    name = "axioms",
-    header = "axioms.fol.def",
+    name = "nat_lib",
+    header = "nat.fol.def",
+    deps = ["@zf//:ZF.Nat"],
 )
 
 # Proof verification target
 fol_proof(
-    name = "ordered_pair",
-    header = "ordered_pair.fol.def",
-    proof = "ordered_pair.fol.proof",
-    deps = [":axioms"],
+    name = "nat",
+    header = "nat.fol.def",
+    proof = "nat.fol.proof",
+    deps = ["@zf//:ZF.Nat"],
 )
 ```
 
-Dependency chain (in `zfc/basics/`):
+Dependency chain:
 ```
-axioms (fol_library)
-  └── ordered_pair (fol_proof) — 15 theorems
-        └── functions (fol_proof) — 5 theorems
-              └── replacement_choice_lib (fol_library) — axioms only
+//lib:base (fol_group) — the 19 axioms and 13 tiers
+  └── @zf//:Pure, :IFOL, :FOL, :ZF.* (fol_proof) — the translated parts
+        └── //math:nat (fol_proof)
 ```
 
 ## Regenerating Parser

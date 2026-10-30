@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Run comb_checker on every fol_proof target under zfc/.
+"""Run comb_checker on every fol_proof target under test/corpus/.
 
-Parses zfc/*/BUILD.bazel for fol_proof and fol_library targets, builds the
+Parses test/corpus/*/BUILD.bazel for fol_proof and fol_library targets, builds the
 transitive dep graph, runs each fol_proof through comb_checker with the
 right deps, and tallies results.
 """
@@ -21,7 +21,7 @@ BIN = REPO / "bazel-bin" / "src" / "tools" / "comb_checker"
 @dataclass
 class Target:
     name: str
-    package: str           # e.g. "zfc/basics"
+    package: str           # e.g. "test/corpus/basics"
     kind: str              # "library" or "proof"
     header: str            # relative path within package
     proof: str | None = None  # relative path within package, for fol_proof
@@ -30,7 +30,7 @@ class Target:
 def parse_build_files() -> dict[tuple[str, str], Target]:
     """Returns map from (package, name) → Target."""
     targets: dict[tuple[str, str], Target] = {}
-    for build in REPO.glob("zfc/**/BUILD.bazel"):
+    for build in REPO.glob("test/corpus/**/BUILD.bazel"):
         package = str(build.parent.relative_to(REPO))
         text = build.read_text()
         # Strip comments (line-based) — simpler than full parsing.
@@ -69,7 +69,7 @@ def parse_build_files() -> dict[tuple[str, str], Target]:
 def resolve_dep(dep: str, pkg: str) -> tuple[str, str]:
     """Resolve a Bazel dep label to (package, name)."""
     if dep.startswith("//"):
-        # "//zfc/basics:name"
+        # "//test/corpus/basics:name"
         p, _, n = dep[2:].partition(":")
         return (p, n)
     if dep.startswith(":"):

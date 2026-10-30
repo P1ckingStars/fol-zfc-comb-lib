@@ -97,7 +97,7 @@ bool test_runtime_load() {
 
 bool test_runtime_load_file() {
     Runtime rt;
-    auto result = rt.load_file_recursive("zfc/basics/ordered_pair.fol.def");
+    auto result = rt.load_file_recursive("test/corpus/basics/ordered_pair.fol.def");
 
     if (!result.ok()) {
         std::cout << "[" << result.error() << "] ";
@@ -713,7 +713,7 @@ bool test_def_annotation_with_proof() {
 // Helper to load ordered pair axioms
 Runtime load_ordered_pair_axioms() {
     Runtime rt;
-    auto result = rt.load_file_recursive("zfc/basics/ordered_pair.fol.def");
+    auto result = rt.load_file_recursive("test/corpus/basics/ordered_pair.fol.def");
     if (!result.ok()) {
         throw std::runtime_error("Failed to load ordered_pair.fol.def: " + result.error().to_string());
     }
@@ -722,7 +722,7 @@ Runtime load_ordered_pair_axioms() {
 
 // The ordered pair proofs require complex quantifier manipulations.
 // Each proof involves:
-// 1. Loading axioms from zfc/ordered_pair.fol
+// 1. Loading axioms from test/corpus/basics/ordered_pair.fol.def
 // 2. Using forall_elim to instantiate quantified axioms
 // 3. Applying iff_elim to extract biconditional directions
 // 4. Using and_intro/and_elim for conjunctions
@@ -777,7 +777,7 @@ bool test_execute_ordered_pair_proofs() {
     Runtime rt;
 
     // Load the header (includes axioms.fol.def recursively)
-    auto header_result = rt.load_file_recursive("zfc/basics/ordered_pair.fol.def");
+    auto header_result = rt.load_file_recursive("test/corpus/basics/ordered_pair.fol.def");
     if (!header_result.ok()) {
         std::cout << "[header load error: " << header_result.error() << "] ";
         return false;
@@ -785,7 +785,7 @@ bool test_execute_ordered_pair_proofs() {
     rt.execute_all_proofs(header_result.value());
 
     // Load the proof file
-    std::ifstream proof_file("zfc/basics/ordered_pair.fol.proof");
+    std::ifstream proof_file("test/corpus/basics/ordered_pair.fol.proof");
     if (!proof_file.is_open()) {
         std::cout << "[could not open proof file] ";
         return false;
@@ -827,7 +827,7 @@ bool test_execute_ordered_pair_proofs() {
 // A proof file streamed block by block gives the proofs parse_with_proofs gives, in its order, and they prove the same
 // theorems.
 bool test_streamed_proofs_are_the_parsed_proofs() {
-    std::ifstream proof_file("zfc/basics/ordered_pair.fol.proof");
+    std::ifstream proof_file("test/corpus/basics/ordered_pair.fol.proof");
     if (!proof_file.is_open()) return false;
     std::stringstream buffer;
     buffer << proof_file.rdbuf();
@@ -837,10 +837,10 @@ bool test_streamed_proofs_are_the_parsed_proofs() {
     if (!error.empty()) return false;
 
     Runtime rt;
-    auto header = rt.load_file_recursive("zfc/basics/ordered_pair.fol.def");
+    auto header = rt.load_file_recursive("test/corpus/basics/ordered_pair.fol.def");
     if (!header.ok()) return false;
     rt.execute_all_proofs(header.value());
-    std::FILE* in = std::fopen("zfc/basics/ordered_pair.fol.proof", "r");
+    std::FILE* in = std::fopen("test/corpus/basics/ordered_pair.fol.proof", "r");
     if (!in) return false;
     std::vector<std::string> names;
     std::vector<size_t> steps;
@@ -889,7 +889,7 @@ bool test_fol_test_file() {
     Runtime rt;
 
     // Load the full header chain (replacement_choice includes functions includes ordered_pair includes axioms)
-    auto header_result = rt.load_file_recursive("zfc/basics/replacement_choice.fol.def");
+    auto header_result = rt.load_file_recursive("test/corpus/basics/replacement_choice.fol.def");
     if (!header_result.ok()) {
         std::cout << "[header load error: " << header_result.error() << "] ";
         return false;
@@ -897,7 +897,7 @@ bool test_fol_test_file() {
     rt.execute_all_proofs(header_result.value());
 
     // Load and execute ordered_pair proofs
-    std::ifstream op_file("zfc/basics/ordered_pair.fol.proof");
+    std::ifstream op_file("test/corpus/basics/ordered_pair.fol.proof");
     if (!op_file.is_open()) {
         std::cout << "[could not open ordered_pair.fol.proof] ";
         return false;
@@ -917,7 +917,7 @@ bool test_fol_test_file() {
     }
 
     // Load and execute functions proofs
-    std::ifstream fn_file("zfc/basics/functions.fol.proof");
+    std::ifstream fn_file("test/corpus/basics/functions.fol.proof");
     if (!fn_file.is_open()) {
         std::cout << "[could not open functions.fol.proof] ";
         return false;
@@ -1858,7 +1858,7 @@ bool test_predicate_schema_capture_with_forall_intro() {
 
 // ==================== Core Inference Rule Tests ====================
 // Direct tests for rules that were previously only exercised transitively
-// via the zfc/ proofs. A failure here pinpoints the broken rule, instead of
+// via the test/corpus/ proofs. A failure here pinpoints the broken rule, instead of
 // appearing as a generic ZFC-theorem breakage.
 
 // and_elim_l / and_elim_r: from A ∧ B derive A, and derive B.

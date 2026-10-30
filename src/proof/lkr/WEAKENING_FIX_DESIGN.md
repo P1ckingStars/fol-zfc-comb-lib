@@ -2,7 +2,7 @@
 
 **Status:** LANDED (phases W0–W2 + the LKR→comb path deletion). Companion to
 the LKR→KS1 pivot (`memory: project_lkr_ks1_pivot_2026_05_31`). Full suite
-green (23/23); only the pre-existing, unrelated `//zfc/naturals` serialization
+green (23/23); only the pre-existing, unrelated `//test/corpus/naturals` serialization
 bug remains red. What shipped: `Weakening{idx}`=drop + new `Duplicate{src}`=copy
 in the verifier (rejects the ⊢P fabrication); deriv IR `RWeaken`(drop)/
 `RDuplicate`(copy) + validate canary; b0 additive→mult bridge now emits

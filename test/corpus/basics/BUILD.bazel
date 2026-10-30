@@ -1,6 +1,6 @@
 load("//build:fol.bzl", "fol_library", "fol_proof")
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//test:__subpackages__"])
 
 exports_files([
     "axioms.fol.def",
@@ -9,7 +9,7 @@ exports_files([
     "functions.fol.def",
     "functions.fol.proof",
     "replacement_choice.fol.def",
-])
+], visibility = ["//test:__subpackages__"])
 
 # ============================================================
 # FOL Libraries (axioms + claims, no proofs)

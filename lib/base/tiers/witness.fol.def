@@ -1,0 +1,36 @@
+# base/tiers/witness -- pair-class membership at a MATERIALISED witness.
+#
+# `pmem(x,y,C)` unfolds to `exists p. (kpair(x,y,p) & p in C)`, so every step
+# that COMBINES two pmem facts receives two different witnesses and has to
+# identify them (pair_uniq, then elem_first_subst). Materialising ONE witness q
+# up front and threading it avoids that; `pmem_at` is what makes it legal --
+# membership at a KNOWN witness is just `elem(q,C)`, so B2/B3 apply unchanged.
+#
+# FOUNDATION §1a: a function is a class of pairs and a tuple is a function, so
+# `pmem` is the one lookup at every arity. `tmem_at` -- membership in a nested
+# triple -- WAS HERE AND IS DELETED; do not reinstate it.
+claim pmem_at: forall x. forall y. forall q. forall C. (kpair(x,y,q) -> (pmem(x,y,C) <-> elem(q,C)))
+
+# Lifted VERBATIM from the `zf_fst_conv_e2e` probe, which the checker accepts.
+# These are the only substitution-form congruences in the tree -- everything
+# else in tier 2 is uniqueness-form (`... -> ... -> eq(p,q)`), which cannot
+# transport a fact.
+claim upair_arg_cong: forall x. forall y. forall x2. forall y2. forall w. (upair(x,y,w) -> (eq(x,x2) -> (eq(y,y2) -> upair(x2,y2,w))))
+claim kpair_arg_cong: forall a. forall b. forall c. forall d. forall p. (kpair(a,b,p) -> (eq(a,c) -> (eq(b,d) -> kpair(c,d,p))))
+
+# `kpair` AS AN ORDINARY STEP -- the graph of Isabelle's `Pair`, and what every
+# function, hence every tuple, is made of (FOUNDATION §1a). A step's obligations
+# are cited as `{rel}_EX` / `_UNIQ` / `_CONG`.
+#
+# These three are `pair_ex` / `pair_uniq` / `kpair_arg_cong` restated in the
+# generator's shape: INTERLEAVED guards (R3), and the argument order per-step
+# citation expects. The originals are grouped and unguarded, and `implies_elim`
+# rejects one shape fed to a kernel stated in the other. PLACEMENT: here and not
+# in `tiers/pairs`, because `kpair_arg_cong` is declared in THIS tier.
+#
+# `kpair_EX` is TOTAL -- no domain hypothesis, unlike a tupled constant's EX.
+# `kpair` is the one primitive: a tuple is made of pairs, so the pair cannot
+# itself take a tuple, and has no tuple domain to be partial on.
+claim kpair_EX: (forall a. (set(a) -> (forall b. (set(b) -> (exists p. (set(p) & kpair(a,b,p)))))))
+claim kpair_UNIQ: (forall a. (set(a) -> (forall b. (set(b) -> (forall p. (set(p) -> (forall q. (set(q) -> (kpair(a,b,p) -> (kpair(a,b,q) -> eq(p,q)))))))))))
+claim kpair_CONG: (forall a. (set(a) -> (forall b. (set(b) -> (forall a2. (set(a2) -> (forall b2. (set(b2) -> (forall p. (set(p) -> (eq(a,a2) -> (eq(b,b2) -> (kpair(a,b,p) -> kpair(a2,b2,p))))))))))))))

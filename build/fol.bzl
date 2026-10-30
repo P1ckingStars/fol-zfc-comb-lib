@@ -12,6 +12,10 @@ FolInfo = provider(
 
 # ==================== Original rules (backward compat) ====================
 
+# Libraries load in this order, each after the ones it builds on.
+def _dep_libs(ctx):
+    return depset(order = "postorder", transitive = [dep[FolInfo].libs for dep in ctx.attr.deps])
+
 def _fol_library_impl(ctx):
     headers = depset(
         direct = [ctx.file.header],
@@ -23,7 +27,7 @@ def _fol_library_impl(ctx):
 
     # Compile header to .fol.lib via fol_compiler
     lib = ctx.actions.declare_file(ctx.label.name + ".fol.lib")
-    dep_libs = depset(transitive = [dep[FolInfo].libs for dep in ctx.attr.deps if dep[FolInfo].lib])
+    dep_libs = _dep_libs(ctx)
 
     # Also need transitive headers for include resolution during parsing
     dep_headers = depset(transitive = [dep[FolInfo].headers for dep in ctx.attr.deps])
@@ -42,10 +46,7 @@ def _fol_library_impl(ctx):
         progress_message = "Compiling %{label}",
     )
 
-    libs = depset(
-        direct = [lib],
-        transitive = [dep[FolInfo].libs for dep in ctx.attr.deps if dep[FolInfo].lib],
-    )
+    libs = depset(direct = [lib], order = "postorder", transitive = [dep_libs])
 
     return [
         FolInfo(headers = headers, proofs = proofs, lib = lib, libs = libs),
@@ -77,24 +78,30 @@ def _fol_proof_impl(ctx):
     header_file = ctx.file.header
     proof_file = ctx.file.proof
 
-    # Compile header + proof to .fol.lib via fol_compiler
+    # Check header + proof and write its .fol.lib with proof_checker, which reads the proof
+    # file a block at a time and fails on a claim left without a proof
     lib = ctx.actions.declare_file(ctx.label.name + ".fol.lib")
     proven = ctx.actions.declare_file(ctx.label.name + ".proven")
-    dep_libs = depset(transitive = [dep[FolInfo].libs for dep in ctx.attr.deps if dep[FolInfo].lib])
+    report = ctx.actions.declare_file(ctx.label.name + ".report")
+    dep_libs = _dep_libs(ctx)
 
     # Also need transitive headers for include resolution during parsing
     dep_headers = depset(transitive = [dep[FolInfo].headers for dep in ctx.attr.deps])
 
     args = ctx.actions.args()
-    args.add(lib)           # output library
+    args.add(report)        # status of every claim and schema
+    args.add(ctx.executable._proof_checker)
+    args.add("--lib", lib)  # output library
     args.add(header_file)   # header
     args.add(proof_file)    # proof file
     args.add_all(dep_libs)  # dep libraries
 
-    ctx.actions.run(
-        outputs = [lib, proven],
+    # One line per claim belongs in the report, not on the console; failures go to stderr.
+    ctx.actions.run_shell(
+        outputs = [lib, proven, report],
         inputs = depset([header_file, proof_file], transitive = [dep_libs, dep_headers]),
-        executable = ctx.executable._fol_compiler,
+        tools = [ctx.executable._proof_checker],
+        command = 'report=$1; shift; exec "$@" > "$report"',
         arguments = [args],
         env = {"FOL_OUTPUT": proven.path},
         mnemonic = "FolProof",
@@ -109,10 +116,7 @@ def _fol_proof_impl(ctx):
         direct = [proof_file],
         transitive = [dep[FolInfo].proofs for dep in ctx.attr.deps],
     )
-    libs = depset(
-        direct = [lib],
-        transitive = [dep[FolInfo].libs for dep in ctx.attr.deps if dep[FolInfo].lib],
-    )
+    libs = depset(direct = [lib], order = "postorder", transitive = [dep_libs])
 
     return [
         FolInfo(headers = headers, proofs = proofs, lib = lib, libs = libs),
@@ -136,11 +140,34 @@ fol_proof = rule(
             providers = [FolInfo],
             doc = "Other fol_library or fol_proof targets this depends on.",
         ),
-        "_fol_compiler": attr.label(
-            default = "//src/tools:fol_compiler",
+        "_proof_checker": attr.label(
+            default = "//src/tools:proof_checker",
             executable = True,
             cfg = "exec",
         ),
     },
     doc = "Verify that all claims in a .fol.def file are proved by the .fol.proof file.",
+)
+
+def _fol_group_impl(ctx):
+    deps = [dep[FolInfo] for dep in ctx.attr.deps]
+    return [
+        FolInfo(
+            headers = depset(transitive = [dep.headers for dep in deps]),
+            proofs = depset(transitive = [dep.proofs for dep in deps]),
+            lib = None,
+            libs = _dep_libs(ctx),
+        ),
+        DefaultInfo(files = depset(transitive = [dep[DefaultInfo].files for dep in ctx.attr.deps])),
+    ]
+
+fol_group = rule(
+    implementation = _fol_group_impl,
+    attrs = {
+        "deps": attr.label_list(
+            providers = [FolInfo],
+            doc = "The fol_library, fol_proof or fol_group targets this collects.",
+        ),
+    },
+    doc = "Several FOL targets as one dep.",
 )

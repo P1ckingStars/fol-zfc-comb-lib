@@ -1,0 +1,109 @@
+load("//build:fol.bzl", "fol_group", "fol_proof")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["zf.sha256"])
+
+# The NBG foundation: the 19 axioms and the tiers built on them. Each tier cites the tiers before it in
+# the order isa2fol's check-base.sh loads them; the translated parts in @zf build on all of them.
+
+fol_proof(
+    name = "axioms",
+    header = "base/axioms.fol.def",
+    proof = "base/axioms.fol.proof",
+)
+
+fol_proof(
+    name = "pairs",
+    header = "base/tiers/pairs.fol.def",
+    proof = "base/tiers/pairs.fol.proof",
+    deps = [":axioms"],
+)
+
+fol_proof(
+    name = "witness",
+    header = "base/tiers/witness.fol.def",
+    proof = "base/tiers/witness.fol.proof",
+    deps = [":axioms", ":pairs"],
+)
+
+fol_proof(
+    name = "logic",
+    header = "base/tiers/logic.fol.def",
+    proof = "base/tiers/logic.fol.proof",
+    deps = [":axioms"],
+)
+
+fol_proof(
+    name = "cong",
+    header = "base/tiers/cong.fol.def",
+    proof = "base/tiers/cong.fol.proof",
+    deps = [":axioms"],
+)
+
+fol_proof(
+    name = "s2s3",
+    header = "base/tiers/s2s3.fol.def",
+    proof = "base/tiers/s2s3.fol.proof",
+    deps = [":axioms", ":pairs", ":witness"],
+)
+
+fol_proof(
+    name = "primitives",
+    header = "base/tiers/primitives.fol.def",
+    proof = "base/tiers/primitives.fol.proof",
+    deps = [":axioms"],
+)
+
+fol_proof(
+    name = "truth",
+    header = "base/tiers/truth.fol.def",
+    proof = "base/tiers/truth.fol.proof",
+    deps = [":axioms", ":pairs", ":cong", ":primitives"],
+)
+
+fol_proof(
+    name = "regroup",
+    header = "base/tiers/regroup.fol.def",
+    proof = "base/tiers/regroup.fol.proof",
+)
+
+fol_proof(
+    name = "tuples",
+    header = "base/tiers/tuples.fol.def",
+    proof = "base/tiers/tuples.fol.proof",
+    deps = [":axioms", ":pairs", ":witness"],
+)
+
+fol_proof(
+    name = "classes",
+    header = "base/tiers/classes.fol.def",
+    proof = "base/tiers/classes.fol.proof",
+    deps = [":axioms", ":pairs", ":witness", ":logic", ":cong", ":s2s3", ":primitives", ":tuples"],
+)
+
+fol_proof(
+    name = "metafun",
+    header = "base/tiers/metafun.fol.def",
+    proof = "base/tiers/metafun.fol.proof",
+    deps = [":axioms", ":pairs", ":witness", ":logic", ":cong", ":s2s3", ":primitives", ":tuples", ":classes"],
+)
+
+fol_proof(
+    name = "inf",
+    header = "base/tiers/inf.fol.def",
+    proof = "base/tiers/inf.fol.proof",
+    deps = [":axioms", ":pairs", ":witness", ":logic", ":cong", ":s2s3", ":primitives", ":tuples", ":classes"],
+)
+
+fol_proof(
+    name = "zf",
+    header = "base/tiers/zf.fol.def",
+    proof = "base/tiers/zf.fol.proof",
+    deps = [":axioms", ":pairs", ":witness", ":logic", ":cong", ":s2s3", ":primitives", ":tuples", ":classes", ":metafun", ":inf"],
+)
+
+fol_group(
+    name = "base",
+    deps = [":axioms", ":pairs", ":witness", ":logic", ":cong", ":s2s3", ":primitives", ":truth", ":regroup", ":tuples", ":classes", ":metafun", ":inf", ":zf"],
+)

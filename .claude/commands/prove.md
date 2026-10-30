@@ -6,12 +6,12 @@ Write a formal proof for the claim **$ARGUMENTS** in the FOL-ZFC proof system. P
 
 ### Step 1: Find the claim
 
-Search `zfc/**/*.fol` files for `claim $ARGUMENTS:`. Read the target .fol file and any files it includes (via `include` directives). If no such claim exists, report an error and stop.
+Search `math/**/*.fol.def` files for `claim $ARGUMENTS:`. Read the target file, its `fol_proof` deps in the `BUILD.bazel` beside it, and any files it includes (via `include` directives). The library it builds on is read as `lib/README.md` says. If no such claim exists, report an error and stop.
 
 ### Step 2: Understand the context
 
 Identify everything available for the proof:
-- **Axioms**: All `axiom` statements (from the file and its includes)
+- **Library**: The axioms, theorems and schemas its `deps` load, found by name in their `.fol.def` files (`lib/README.md`)
 - **Previously proven theorems**: All `proof` blocks that appear before where the new proof will go. Once a claim has a `proof` block, it becomes a theorem that can be `use`d.
 - **The claim's formula**: Parse the claim to understand its logical structure
 
@@ -25,15 +25,14 @@ Analyze the claim's formula structure:
 - **`A <-> B`**: Will need both directions as implications, then `iff_intro`
 
 Common proof patterns:
-- To use a universally quantified axiom/theorem: `use` it, then `forall_elim` for each quantifier
+- To use a universally quantified axiom/theorem: `use` it, then `forall_elim` for each quantifier, and `implies_elim` for each `set(·)` guard
+- To use a schema: `schema_inst` with a formula for each of its letters
 - To extract from a biconditional definition: `iff_elim_l` (forward) or `iff_elim_r` (backward)
 - To prove equality `eq(a,b)`: use `extensionality` to reduce to membership equivalence
-- To substitute equals: there is no substitution rule. Use `eq_elem_l` / `eq_elem_r` (or `pair_eq_a`, `pair_eq_b`, `rel_elem_eq`): `forall_elim` to instantiate, `and_intro` for the premise, `implies_elim` to apply
+- To substitute equals: there is no substitution rule. Use `elem_first_subst` (element position) or `elem_second` (set position), `cong_elem_l` / `cong_elem_r` for biconditionals, and `set_cong` for `set(·)`: `forall_elim` to instantiate, `implies_elim` to apply
 - To create a formula handle without deriving it (e.g. for `or_intro`): use `let`
-- To construct a concrete set: use the `pairing` axiom + `exists_elim` to get a witness
-- To get a singleton from `pairing(a,a)`: need OR-idempotency conversion (~15 lines)
-- To get a doubleton from `pairing(a,b)`: `doubleton_def` RHS matches directly
-- To transfer membership between equal sets: use `eq_elem_r`
+- To construct a concrete set: use the `pairing` axiom + `exists_elim` to get a witness; `upair_def` folds it into `upair(a, b, z)`
+- To transfer membership between equal sets: use `elem_second`
 
 ### Step 3b: Split complex proofs into lemmas
 
@@ -51,7 +50,7 @@ When splitting:
 
 ### Step 4: Write the proof
 
-Insert the proof block in the .fol file. Place it after all proofs it depends on and before any proofs that depend on it.
+Insert the proof block in the .fol.proof file. Place it after all proofs it depends on and before any proofs that depend on it.
 
 The proof block format:
 ```fol
@@ -62,21 +61,17 @@ proof <claim_name>:
 
 ### Step 5: Verify
 
-Run the test to check the proof is accepted:
+Build the claim's target to check the proof is accepted:
 ```bash
-bazel test //test:runtime_test
+bazel build //math:<target>
 ```
 
-If it fails, read the test log to find the error, fix the proof, and re-run. Common errors:
+If it fails, read the error, fix the proof, and re-run. Common errors:
 - "formula not derived" - a step references something not yet proven in the current scope
 - "doesn't match" - formula structure mismatch (e.g. wrong side of iff_elim)
 - "not in fix_var scope" / "not in assumption scope" - forall_intro/implies_intro called without proper scope
 
-### Step 6: Update the test expectations
-
-If the proof passes, check if `test/runtime_test.cpp` has an `expected_theorems` vector in `test_execute_ordered_pair_proofs`. If so, add `"$ARGUMENTS"` to it.
-
-Re-run `bazel test //test:runtime_test` to confirm all tests pass.
+If it passes, confirm the claim is listed under `Proved` in `bazel-bin/math/<target>.report`. A claim whose name the `deps` already load is dropped without an error, and the build passes without checking it: rename it.
 
 ## Available Rules Reference
 
@@ -120,6 +115,9 @@ exists_intro h          # P(t) => exists x. P(x) (or closes exists scope if in o
 exists_elim h           # exists x. P(x) => opens witness scope with P(c)
 exists_elim h, name     # same, but names the witness variable for use in forall_elim
 
+# Schemas
+schema_inst name { A: <formula>, P: \x. <formula> }   # a schema with its letters instantiated
+
 # Classical
 double_neg_elim h       # ~~A => A
 excluded_middle h       # => A | ~A
@@ -133,5 +131,6 @@ excluded_middle h       # => A | ~A
 4. **`let` does NOT derive** - it only creates a formula handle. Use it for the non-derived argument of `or_intro_l`/`or_intro_r`, and for `bottom_elim`.
 5. **One claim at a time** - prove a single claim, verify it, then move to the next. Previously proven claims become available as theorems.
 6. **`exists_intro` closes exists scope** - When inside an exists scope (from `exists_elim`), `exists_intro h` closes the scope. The formula `h` must NOT contain the witness variable.
-7. **Compute shared values before case splits** - Derive utilities like `eq_refl`, `eq_sym` instances, and `eq_trans` in the enclosing scope so they're accessible in all branches.
+7. **Compute shared values before case splits** - Derive utilities like `eq_refl`, `eq_symm` and `eq_trans` instances in the enclosing scope so they're accessible in all branches.
 8. **Handle names are global** - All handle names share a flat namespace across the proof. Use distinct names in different branches (e.g. `h_bd_s1` vs `h_bd_s2`).
+9. **Never add a bare `axiom`** - `math/` adds `@def` definitions and claims only. The build does not refuse one (`lib/README.md`).

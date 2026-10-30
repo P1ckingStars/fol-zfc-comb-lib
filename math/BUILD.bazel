@@ -1,0 +1,10 @@
+load("//build:fol.bzl", "fol_proof")
+
+package(default_visibility = ["//math:__subpackages__"])
+
+fol_proof(
+    name = "nat",
+    header = "nat.fol.def",
+    proof = "nat.fol.proof",
+    deps = ["@zf//:ZF.Nat"],
+)

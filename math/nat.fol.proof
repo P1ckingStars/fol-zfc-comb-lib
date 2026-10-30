@@ -1,0 +1,23 @@
+proof nat_inhabited:
+    fix z
+    h_set_z = assume set(z)
+    h_zero = assume ZF_Base.zero(z)
+    fix n
+    h_set_n = assume set(n)
+    h_nat = assume Nat.nat(n)
+    zero_in = use Nat.nat_0I
+    i1 = forall_elim zero_in, z
+    i2 = implies_elim i1, h_set_z
+    i3 = implies_elim i2, h_zero
+    i4 = forall_elim i3, n
+    i5 = implies_elim i4, h_set_n
+    h_elem = implies_elim i5, h_nat
+    h_conj = and_intro h_set_z, h_elem
+    h_ex = exists_intro h_conj, z
+    c1 = implies_intro h_ex
+    c2 = implies_intro c1
+    c3 = forall_intro c2
+    c4 = implies_intro c3
+    c5 = implies_intro c4
+    c6 = forall_intro c5
+    qed c6
