@@ -1,0 +1,3 @@
+proof Cls.test_isa2fol_61436c:
+    _h1 = use Cls.CLASS_25c6d945ae42af85
+    qed _h1

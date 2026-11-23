@@ -1,0 +1,29 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# The library face (DESIGN.md §5): a request in, the claim and its proof out.
+cc_library(
+    name = "class",
+    srcs = [
+        "ast.cc",
+        "construction.cc",
+    ],
+    hdrs = [
+        "ast.h",
+        "construction.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["//src/core:formula"],
+)
+
+# The command line: a request file in, a .fol.def and a .fol.proof out, for proof_checker.
+cc_binary(
+    name = "class_machine",
+    srcs = ["main.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":class",
+        "//src/parser",
+        "//src/runtime",
+    ],
+)

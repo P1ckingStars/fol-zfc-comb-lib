@@ -1,0 +1,47 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//build:fol.bzl", "fol_proof")
+load("//src/machines/class:defs.bzl", "class_claim")
+
+# Each request: the machine writes its claim and proof at build time, and proof_checker checks them.
+[
+    (
+        class_claim(
+            name = n + "_gen",
+            request = n + ".req",
+            deps = ["//lib:base"],
+            out_def = n + ".fol.def",
+            out_proof = n + ".fol.proof",
+        ),
+        fol_proof(
+            name = n,
+            header = n + ".fol.def",
+            proof = n + ".fol.proof",
+            deps = ["//lib:base"],
+        ),
+    )
+    for n in [
+        "m1",
+        "exact",
+        "val",
+        "set",
+        "param_set",
+        "param_class",
+        "connectives",
+        "snoc",
+        "iff_false",
+    ]
+]
+
+fol_proof(
+    name = "m1_check",
+    header = "m1_check.fol.def",
+    proof = "m1_check.fol.proof",
+    deps = [":m1"],
+)
+
+# The gate: formulas outside it are refused with a reason, and no claim is written.
+cc_test(
+    name = "refused_test",
+    srcs = ["refused_test.cc"],
+    deps = ["//src/machines/class"],
+)

@@ -1,0 +1,4 @@
+shape: EXACT
+var: x
+params: 
+formula: (exists t. (set(t) & (exists n. (set(n) & snoc(t, n, x, x)))))

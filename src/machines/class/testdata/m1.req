@@ -1,0 +1,4 @@
+shape: CLASS
+var: x
+params: 
+formula: (exists y. (set(y) & elem(y, x)))

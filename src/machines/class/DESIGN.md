@@ -22,10 +22,10 @@ Isabelle terms (`Sources/Lowering/Classes.swift`); the machine writes them for e
 ## 2. Request
 
 - φ, a formula in `src/core`'s formula IR.
-- The shape wanted (§4), and for GRAPH the bound D.
+- The shape wanted (§4). GRAPH's bound is no part of the request: its claim holds for every set D.
 - x⃗, the abstracted variables in order: the class's arity k.
 - p⃗, φ's other free variables, the parameters: each a set (under `set(p)`) or a class.
-- The loaded library parts, for the constants φ mentions.
+- The loaded library parts, for the constants and `@def`s φ mentions.
 
 ## 3. The construction
 
@@ -117,12 +117,19 @@ claim many parts cite moves to a shared part.
 As in ai-fol (`DECODER.md` D22): a machine takes a goal and offers one next state with the fol-zfc steps that reach it.
 
 - **Machine:** given a goal `Γ ⊢ G` and a request, it offers `Γ, the requested shape of φ at a fresh C ⊢ G` with the
-  steps.
+  steps. Built once the machine interface shared with ai-fol and rtl2fol is decided (sys2fol `DESIGN.md` §10); the
+  library and the command line come first.
   It is deterministic: it offers its state or refuses φ at the gate, never a wrong state, so ai-fol does not draw it as
   it draws the noisy cite and cut machines.
 - **Library:** `//src/machines/class`, a request in, the claims and their steps out, in `src/proof`'s IR for a caller
   assembling a larger proof. `proof_checker` does not depend on it.
-- **Command line:** a request file in, a `.fol.def` and a `.fol.proof` out, for `proof_checker`.
+- **Command line:** `class_machine REQUEST OUT.fol.def OUT.fol.proof LIB...`. The request is lines `shape:`, `var:`,
+  `params:` (each `name set` or `name class`) and `formula:`, the formula to the end of the file; the libraries are the
+  parts its `@def`s come from, each `@def` found among their axioms by its shape `∀x⃗. P(x⃗) ↔ body`. `class_claim`
+  (`defs.bzl`) runs it at build time, its outputs a `fol_proof`'s header and proof.
+
+A formula outside the gate (§3) is refused with its reason: no claim and no proof. A claim is safe because
+`proof_checker` checks its proof, and the machine adds no axiom.
 
 ## 6. Cost
 
@@ -131,11 +138,17 @@ management is O(n) steps per quantifier (FOUNDATION §3).
 
 ## 7. First milestone
 
-CLASS and EXACT for three formulas, every claim on `proof_checker`'s Proved list:
+For sys2fol's steps 4 and 5 (sys2fol `DESIGN.md` §7), every claim on `proof_checker`'s Proved list:
 
-1. The formula of a `CLASS_` claim isa2fol proved, checked side by side with isa2fol's.
-2. The swap example's invariant over `2×2`, with its SET.
-3. One rtl2fol latch equation's induction predicate, with `Nat.nat_induct` cited at it.
+1. The formula of a `CLASS_` claim isa2fol proved, its CLASS and EXACT checked side by side with isa2fol's.
+2. Step 4's set J, the implementation states related to a reachable spec state, as SET: a formula through the `@def`s
+   `Sys.reachable` and `Sys.related`.
+
+Both checked: `testdata:m1` with `testdata:m1_check`, and `//math/systems:related_reachable`, whose formula unfolds to
+about 570 subformulas and whose proof, 129,000 lines, checks in seconds. `testdata` also checks every shape but GRAPH,
+both kinds of parameter, every connective, and the gate's refusals. The swap example's invariant and an rtl2fol latch
+equation's induction predicate come with Part B and rtl2fol; GRAPH with step 5. Not yet built, and refused for now: a
+set parameter outside a membership's right side, and a library constant's atom.
 
 ## 8. To read before building
 
@@ -148,3 +161,10 @@ CLASS and EXACT for three formulas, every claim on `proof_checker`'s Proved list
 
 A `@def` with its own cached class claim, sharing claims between requests beyond identical formulas, isa2fol calling
 the machine.
+
+## 10. Decided by the user
+
+| # | Decision | Reason |
+|---|---|---|
+| 1 | Five shapes, CLASS, EXACT, VAL, SET and GRAPH, each a proved `∃` claim, φ's other free variables universally quantified (§4) | A client citing a set gets it as SET, restricted from a set already there, as everything a claim is about is a set (sys2fol `DESIGN.md` §9, decision 3). A class given by a definition would be an axiom assuming its existence instead of proving it. With EXACT alone, every client would prove the other four itself. |
+| 2 | The request is φ, the shape, the abstracted variables in order, the parameters each marked set or class, and the loaded parts (§2). A formula outside the gate is refused with its reason. The library and the command line first; the machine face once the shared machine interface is decided (§5) | A claim is safe because the checker proved it, and the machine adds no axiom. The interface is needed before the face built on it. |

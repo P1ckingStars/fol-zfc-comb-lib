@@ -1,0 +1,4 @@
+shape: SET
+var: x
+params: 
+formula: (forall y. (set(y) -> (elem(y, x) -> (zero(y) | nsucc(y, x)))))

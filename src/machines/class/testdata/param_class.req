@@ -1,0 +1,4 @@
+shape: VAL
+var: x
+params: Q class
+formula: (elem(x, Q) & (~ eq(x, x)))

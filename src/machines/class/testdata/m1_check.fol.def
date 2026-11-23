@@ -1,0 +1,4 @@
+# Milestone 1: isa2fol's CLASS_61436c753fd14d2f, stated again, follows by citing the machine's CLASS of the same
+# formula, so the two statements are the same up to the names of bound variables.
+
+claim Cls.test_isa2fol_61436c: exists b0. forall b1. (set(b1) -> (elem(b1, b0) <-> (exists b2. (set(b2) & ((forall b3. (set(b3) -> (zero(b3) -> snoc(b3, b3, b2, b1)))) & (exists b3. (set(b3) & elem(b3, b2))))))))

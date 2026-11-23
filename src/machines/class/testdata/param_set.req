@@ -1,0 +1,4 @@
+shape: SET
+var: x
+params: P set
+formula: elem(x, P)
