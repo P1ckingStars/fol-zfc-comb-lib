@@ -147,7 +147,7 @@ For sys2fol's steps 4 and 5 (sys2fol `DESIGN.md` §7), every claim on `proof_che
 Both checked: `testdata:m1` with `testdata:m1_check`, and `//math/systems:related_reachable`, whose formula unfolds to
 about 570 subformulas and whose proof, 129,000 lines, checks in seconds. `testdata` also checks every shape but GRAPH,
 both kinds of parameter, every connective, and the gate's refusals. The swap example's invariant and an rtl2fol latch
-equation's induction predicate come with Part B and rtl2fol; GRAPH with step 5. Not yet built, and refused for now: a
+equation's induction predicate come with Part B and rtl2fol; GRAPH with the first use of a bridge on given systems. Not yet built, and refused for now: a
 set parameter outside a membership's right side, and a library constant's atom.
 
 ## 8. To read before building

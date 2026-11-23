@@ -20,3 +20,7 @@ claim Sys.related_cong: (forall R. (forall x. (set(x) -> (forall x2. (set(x2) ->
 # Lock-step simulation's theorem into the meaning (decision 10).
 claim Sys.simulation_refines: (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) -> (forall R. (set(R) ->
     (Sys.simulation(step1, Init1, step2, Init2, R) -> Sys.refines(step1, Init1, step2, Init2))))))))))))
+
+# The same, for a relation read backwards: each spec step matched by an implementation step.
+claim Sys.converse_simulation_refines: (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) -> (forall R. (set(R) -> ((forall t. (set(t) -> (elem(t, Init2) -> (exists s. (set(s) & (elem(s, Init1) & Sys.related(R, s, t))))))) ->
+    ((forall x. (set(x) -> (forall y. (set(y) -> (Sys.related(R, x, y) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall y2. (set(y2) -> (Sys.transition(step2, y, a, b, y2) -> (exists x2. (set(x2) & (Sys.transition(step1, x, a, b, x2) & Sys.related(R, x2, y2)))))))))))))))) -> Sys.refines(step2, Init2, step1, Init1)))))))))))))

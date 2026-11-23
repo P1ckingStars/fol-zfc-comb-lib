@@ -104,5 +104,32 @@ fol_proof(
     deps = [
         ":simulation",
         ":trace_prefix",
+        ":trace_prefix_back",
     ],
+)
+
+fol_proof(
+    name = "equivalence",
+    header = "equivalence.fol.def",
+    proof = "equivalence.fol.proof",
+    deps = [
+        ":bisim",
+        ":traces",
+    ],
+)
+
+# trace_prefix_back: as trace_prefix, for a relation read backwards (Sys.converse_simulation_refines).
+class_claim(
+    name = "trace_prefix_back_gen",
+    request = "trace_prefix_back.req",
+    deps = [":basic"],
+    out_def = "trace_prefix_back.fol.def",
+    out_proof = "trace_prefix_back.fol.proof",
+)
+
+fol_proof(
+    name = "trace_prefix_back",
+    header = "trace_prefix_back.fol.def",
+    proof = "trace_prefix_back.fol.proof",
+    deps = [":basic"],
 )

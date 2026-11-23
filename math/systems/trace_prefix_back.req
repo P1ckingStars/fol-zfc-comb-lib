@@ -1,0 +1,4 @@
+shape: SET
+var: x
+params: m1 set, tr set, run1 set, step1 set, Init1 set, R set
+formula: (elem(x, m1) -> (exists r2. (set(r2) & ((exists m. (set(m) & (nsucc(x, m) & tuple(r2, m)))) & ((exists z. (set(z) & (zero(z) & (exists s0. (set(s0) & (pmem(z, s0, r2) & elem(s0, Init1))))))) & ((forall i. (set(i) -> (elem(i, x) -> (forall i2. (set(i2) -> (nsucc(i, i2) -> (exists q. (set(q) & (pmem(i, q, tr) & (exists a. (set(a) & (exists b. (set(b) & (Sys.tuple2(q, a, b) & (exists u. (set(u) & (pmem(i, u, r2) & (exists v. (set(v) & (pmem(i2, v, r2) & Sys.transition(step1, u, a, b, v))))))))))))))))))))) & (forall u. (set(u) -> (pmem(x, u, run1) -> (forall v. (set(v) -> (pmem(x, v, r2) -> Sys.related(R, v, u)))))))))))))

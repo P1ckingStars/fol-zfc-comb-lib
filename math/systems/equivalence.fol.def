@@ -1,0 +1,20 @@
+# A trace starts at some initial state, and grows with the initial states.
+claim Sys.trace_start: (forall step. (set(step) -> (forall Init. (set(Init) -> (forall tr. (set(tr) -> (Sys.trace(step, Init, tr) ->
+    (exists s0. (set(s0) & (elem(s0, Init) & (forall I0. (set(I0) -> (upair(s0, s0, I0) -> Sys.trace(step, I0, tr))))))))))))))
+
+claim Sys.trace_mono: (forall step. (set(step) -> (forall I. (set(I) -> (forall J. (set(J) -> ((forall u. (set(u) -> (elem(u, I) -> elem(u, J)))) ->
+    (forall tr. (set(tr) -> (Sys.trace(step, I, tr) -> Sys.trace(step, J, tr)))))))))))
+
+# bisimilar is a bisimulation (sys2fol DESIGN.md §7, step 5), pointwise: a predicate, not a set (decision 3).
+claim Sys.bisimilar_forth: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall x. (set(x) -> (forall y. (set(y) ->
+    (Sys.bisimilar(S1, step1, S2, step2, x, y) ->
+    (forall a. (set(a) -> (forall b. (set(b) -> (forall x2. (set(x2) -> (Sys.transition(step1, x, a, b, x2) -> (exists y2. (set(y2) & (Sys.transition(step2, y, a, b, y2) & Sys.bisimilar(S1, step1, S2, step2, x2, y2))))))))))))))))))))))))
+
+claim Sys.bisimilar_back: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall x. (set(x) -> (forall y. (set(y) ->
+    (Sys.bisimilar(S1, step1, S2, step2, x, y) ->
+    (forall a. (set(a) -> (forall b. (set(b) -> (forall y2. (set(y2) -> (Sys.transition(step2, y, a, b, y2) -> (exists x2. (set(x2) & (Sys.transition(step1, x, a, b, x2) & Sys.bisimilar(S1, step1, S2, step2, x2, y2))))))))))))))))))))))))
+
+# Bisimilar initial states give equivalent (decision 11): a simulation each way, from a singleton.
+claim Sys.bisimilar_equivalent: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) ->
+    ((forall s. (set(s) -> (elem(s, Init1) -> (exists t. (set(t) & (elem(t, Init2) & Sys.bisimilar(S1, step1, S2, step2, s, t))))))) ->
+    ((forall t. (set(t) -> (elem(t, Init2) -> (exists s. (set(s) & (elem(s, Init1) & Sys.bisimilar(S1, step1, S2, step2, s, t))))))) -> Sys.equivalent(step1, Init1, step2, Init2)))))))))))))))
