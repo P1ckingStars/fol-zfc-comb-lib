@@ -1,0 +1,32 @@
+@def(Sys.reachable) axiom Sys.reachable_def: (forall S. (forall step. (forall Init. (forall s.
+    (Sys.reachable(S, step, Init, s) <-> (forall I. (set(I) ->
+    ((forall u. (set(u) -> (elem(u, I) -> elem(u, S)))) -> ((forall u. (set(u) -> (elem(u, Init) -> elem(u, I)))) ->
+    ((forall x. (set(x) -> (elem(x, I) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step, x, a, b, u) -> elem(u, I))))))))))) -> elem(s, I)))))))))))
+
+# The bridge (sys2fol DESIGN.md §4): reachable is Fixedpt's lfp, for every h of the GRAPH shape with bound S.
+claim Sys.reachable_lfp: (forall S. (set(S) -> (forall step. (set(step) -> (forall Init. (set(Init) ->
+    ((forall u. (set(u) -> (elem(u, Init) -> elem(u, S)))) ->
+    ((forall x. (set(x) -> (elem(x, S) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step, x, a, b, u) -> elem(u, S))))))))))) ->
+    (forall h. (function(h) ->
+    ((forall X. (set(X) ->
+    (forall t. (set(t) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t)))) -> (forall r. (set(r) -> (apply(t, r, h) <-> (forall u. (set(u) -> (elem(u, r) <-> (elem(u, S) & (elem(u, Init) | (exists x. (set(x) & (elem(x, X) & (exists a. (set(a) & (exists b. (set(b) & Sys.transition(step, x, a, b, u))))))))))))))))))))) ->
+    (forall H. ((forall t. (set(t) -> (forall r. (set(r) -> (pmem(t, r, H) <-> (exists X. (set(X) & ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t)))) & (forall t2. (set(t2) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t2)))) -> (forall r2. (set(r2) -> (apply(t2, r2, h) -> eq(r, r2))))))))))))))) ->
+    (forall L. (Fixedpt.lfp(L, H) ->
+    (forall t. (set(t) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, S, t)))) ->
+    (forall P. (set(P) -> (pmem(t, P, L) ->
+    (forall s. (set(s) -> (Sys.reachable(S, step, Init, s) <-> elem(s, P)))))))))))))))))))))))))
+
+# Initial states are reachable, and a step from a reachable state reaches a reachable state.
+claim Sys.reachable_init: (forall S. (set(S) -> (forall step. (set(step) -> (forall Init. (set(Init) ->
+    (forall t. (set(t) -> (elem(t, Init) -> Sys.reachable(S, step, Init, t))))))))))
+
+claim Sys.reachable_step: (forall S. (set(S) -> (forall step. (set(step) -> (forall Init. (set(Init) ->
+    (forall x. (set(x) -> (Sys.reachable(S, step, Init, x) ->
+    (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step, x, a, b, u) -> Sys.reachable(S, step, Init, u)))))))))))))))))
+
+# The invariance rule: an invariant inside P holds every reachable state in P.
+claim Sys.invariance: (forall S. (set(S) -> (forall step. (set(step) -> (forall Init. (set(Init) -> (forall I. (set(I) -> (forall P. (set(P) ->
+    ((forall u. (set(u) -> (elem(u, I) -> elem(u, S)))) -> ((forall u. (set(u) -> (elem(u, Init) -> elem(u, I)))) ->
+    ((forall x. (set(x) -> (elem(x, I) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step, x, a, b, u) -> elem(u, I))))))))))) ->
+    ((forall u. (set(u) -> (elem(u, I) -> elem(u, P)))) ->
+    (forall s. (set(s) -> (Sys.reachable(S, step, Init, s) -> elem(s, P))))))))))))))))))

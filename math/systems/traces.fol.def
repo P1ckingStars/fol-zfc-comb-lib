@@ -1,0 +1,22 @@
+# Runs and traces (sys2fol DESIGN.md decisions 11, 12): a trace the finite sequence of input/output pairs a
+# run from an initial state produces; refines and equivalent by its traces.
+@def(Sys.run) axiom Sys.run_def: (forall step. (forall Init. (forall n. (forall tr. (forall run.
+    (Sys.run(step, Init, n, tr, run) <-> (tuple(tr, n) &
+    ((exists m. (set(m) & (nsucc(n, m) & tuple(run, m)))) &
+    ((exists z. (set(z) & (zero(z) & (exists s0. (set(s0) & (pmem(z, s0, run) & elem(s0, Init))))))) &
+    (forall i. (set(i) -> (elem(i, n) -> (forall i2. (set(i2) -> (nsucc(i, i2) -> (exists q. (set(q) & (pmem(i, q, tr) & (exists a. (set(a) & (exists b. (set(b) & (Sys.tuple2(q, a, b) & (exists u. (set(u) & (pmem(i, u, run) & (exists v. (set(v) & (pmem(i2, v, run) & Sys.transition(step, u, a, b, v))))))))))))))))))))))))))))))
+
+@def(Sys.trace) axiom Sys.trace_def: (forall step. (forall Init. (forall tr.
+    (Sys.trace(step, Init, tr) <-> (exists n. (set(n) & (Sys.natural(n) & (exists run. (set(run) & Sys.run(step, Init, n, tr, run))))))))))
+
+@def(Sys.refines) axiom Sys.refines_def: (forall step1. (forall Init1. (forall step2. (forall Init2.
+    (Sys.refines(step1, Init1, step2, Init2) <-> (forall tr. (set(tr) -> (Sys.trace(step1, Init1, tr) -> Sys.trace(step2, Init2, tr)))))))))
+
+@def(Sys.equivalent) axiom Sys.equivalent_def: (forall step1. (forall Init1. (forall step2. (forall Init2.
+    (Sys.equivalent(step1, Init1, step2, Init2) <-> (Sys.refines(step1, Init1, step2, Init2) & Sys.refines(step2, Init2, step1, Init1)))))))
+
+claim Sys.related_cong: (forall R. (forall x. (set(x) -> (forall x2. (set(x2) -> (forall y. (set(y) -> (forall y2. (set(y2) -> (eq(x, x2) -> (eq(y, y2) -> (Sys.related(R, x, y) -> Sys.related(R, x2, y2)))))))))))))
+
+# Lock-step simulation's theorem into the meaning (decision 10).
+claim Sys.simulation_refines: (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) -> (forall R. (set(R) ->
+    (Sys.simulation(step1, Init1, step2, Init2, R) -> Sys.refines(step1, Init1, step2, Init2))))))))))))

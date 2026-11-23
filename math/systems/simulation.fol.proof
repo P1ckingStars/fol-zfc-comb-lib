@@ -1,0 +1,300 @@
+proof Sys.simulation_reach:
+    _h1 = use Sys.reachable_def
+    _h2 = use Sys.simulation_def
+    _h3 = use Cls.SET_ecbe19aaaf23b0c2
+    _h4 = use Sys.reachable_init
+    _h5 = use Sys.reachable_step
+    fix S1
+    _h6 = assume set(S1)
+    fix step1
+    _h7 = assume set(step1)
+    fix Init1
+    _h8 = assume set(Init1)
+    fix S2
+    _h9 = assume set(S2)
+    fix step2
+    _h10 = assume set(step2)
+    fix Init2
+    _h11 = assume set(Init2)
+    fix R
+    _h12 = assume set(R)
+    _h13 = assume (forall u. (set(u) -> (elem(u, Init1) -> elem(u, S1))))
+    _h14 = assume (forall x. (set(x) -> (elem(x, S1) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step1, x, a, b, u) -> elem(u, S1)))))))))))
+    _h15 = assume Sys.simulation(step1, Init1, step2, Init2, R)
+    _h16 = forall_elim _h2, step1
+    _h17 = forall_elim _h16, Init1
+    _h18 = forall_elim _h17, step2
+    _h19 = forall_elim _h18, Init2
+    _h20 = forall_elim _h19, R
+    _h21 = iff_elim_l _h20, _h15
+    _h22 = and_elim_l _h21
+    _h23 = and_elim_r _h21
+    _h24 = forall_elim _h3, S2
+    _h25 = implies_elim _h24, _h9
+    _h26 = forall_elim _h25, step2
+    _h27 = implies_elim _h26, _h10
+    _h28 = forall_elim _h27, Init2
+    _h29 = implies_elim _h28, _h11
+    _h30 = forall_elim _h29, R
+    _h31 = implies_elim _h30, _h12
+    _h32 = forall_elim _h31, S1
+    _h33 = implies_elim _h32, _h6
+    _h34 = exists_elim _h33, J
+    _h35 = and_elim_l _h34
+    _h36 = and_elim_r _h34
+    fix s0
+    _h37 = assume set(s0)
+    _h38 = assume Sys.reachable(S1, step1, Init1, s0)
+    _h39 = forall_elim _h1, S1
+    _h40 = forall_elim _h39, step1
+    _h41 = forall_elim _h40, Init1
+    _h42 = forall_elim _h41, s0
+    _h43 = iff_elim_l _h42, _h38
+    _h44 = forall_elim _h43, J
+    _h45 = implies_elim _h44, _h35
+    fix uA
+    _h46 = assume set(uA)
+    _h47 = assume elem(uA, J)
+    _h48 = forall_elim _h36, uA
+    _h49 = implies_elim _h48, _h46
+    _h50 = iff_elim_l _h49, _h47
+    _h51 = and_elim_l _h50
+    _h52 = implies_intro _h51
+    _h53 = implies_intro _h52
+    _h54 = forall_intro _h53
+    _h55 = implies_elim _h45, _h54
+    fix uB
+    _h56 = assume set(uB)
+    _h57 = assume elem(uB, Init1)
+    _h58 = forall_elim _h13, uB
+    _h59 = implies_elim _h58, _h56
+    _h60 = implies_elim _h59, _h57
+    _h61 = forall_elim _h22, uB
+    _h62 = implies_elim _h61, _h56
+    _h63 = implies_elim _h62, _h57
+    _h64 = exists_elim _h63, tB
+    _h65 = and_elim_l _h64
+    _h66 = and_elim_r _h64
+    _h67 = and_elim_l _h66
+    _h68 = and_elim_r _h66
+    _h69 = forall_elim _h4, S2
+    _h70 = implies_elim _h69, _h9
+    _h71 = forall_elim _h70, step2
+    _h72 = implies_elim _h71, _h10
+    _h73 = forall_elim _h72, Init2
+    _h74 = implies_elim _h73, _h11
+    _h75 = forall_elim _h74, tB
+    _h76 = implies_elim _h75, _h65
+    _h77 = implies_elim _h76, _h67
+    _h78 = forall_elim _h36, uB
+    _h79 = implies_elim _h78, _h56
+    _h80 = and_intro _h77, _h68
+    _h81 = and_intro _h65, _h80
+    _h82 = exists_intro _h81, tB
+    _h83 = and_intro _h60, _h82
+    _h84 = iff_elim_r _h79, _h83
+    _h85 = exists_intro _h84
+    _h86 = implies_intro _h85
+    _h87 = implies_intro _h86
+    _h88 = forall_intro _h87
+    _h89 = implies_elim _h55, _h88
+    fix xC
+    _h90 = assume set(xC)
+    _h91 = assume elem(xC, J)
+    fix aC
+    _h92 = assume set(aC)
+    fix bC
+    _h93 = assume set(bC)
+    fix uC
+    _h94 = assume set(uC)
+    _h95 = assume Sys.transition(step1, xC, aC, bC, uC)
+    _h96 = forall_elim _h36, xC
+    _h97 = implies_elim _h96, _h90
+    _h98 = iff_elim_l _h97, _h91
+    _h99 = and_elim_r _h98
+    _h100 = exists_elim _h99, vC
+    _h101 = and_elim_l _h100
+    _h102 = and_elim_r _h100
+    _h103 = and_elim_l _h102
+    _h104 = and_elim_r _h102
+    _h105 = and_elim_l _h98
+    _h106 = forall_elim _h14, xC
+    _h107 = implies_elim _h106, _h90
+    _h108 = implies_elim _h107, _h105
+    _h109 = forall_elim _h108, aC
+    _h110 = implies_elim _h109, _h92
+    _h111 = forall_elim _h110, bC
+    _h112 = implies_elim _h111, _h93
+    _h113 = forall_elim _h112, uC
+    _h114 = implies_elim _h113, _h94
+    _h115 = implies_elim _h114, _h95
+    _h116 = forall_elim _h23, xC
+    _h117 = implies_elim _h116, _h90
+    _h118 = forall_elim _h117, vC
+    _h119 = implies_elim _h118, _h101
+    _h120 = implies_elim _h119, _h104
+    _h121 = forall_elim _h120, aC
+    _h122 = implies_elim _h121, _h92
+    _h123 = forall_elim _h122, bC
+    _h124 = implies_elim _h123, _h93
+    _h125 = forall_elim _h124, uC
+    _h126 = implies_elim _h125, _h94
+    _h127 = implies_elim _h126, _h95
+    _h128 = exists_elim _h127, tC
+    _h129 = and_elim_l _h128
+    _h130 = and_elim_r _h128
+    _h131 = and_elim_l _h130
+    _h132 = and_elim_r _h130
+    _h133 = forall_elim _h5, S2
+    _h134 = implies_elim _h133, _h9
+    _h135 = forall_elim _h134, step2
+    _h136 = implies_elim _h135, _h10
+    _h137 = forall_elim _h136, Init2
+    _h138 = implies_elim _h137, _h11
+    _h139 = forall_elim _h138, vC
+    _h140 = implies_elim _h139, _h101
+    _h141 = implies_elim _h140, _h103
+    _h142 = forall_elim _h141, aC
+    _h143 = implies_elim _h142, _h92
+    _h144 = forall_elim _h143, bC
+    _h145 = implies_elim _h144, _h93
+    _h146 = forall_elim _h145, tC
+    _h147 = implies_elim _h146, _h129
+    _h148 = implies_elim _h147, _h131
+    _h149 = forall_elim _h36, uC
+    _h150 = implies_elim _h149, _h94
+    _h151 = and_intro _h148, _h132
+    _h152 = and_intro _h129, _h151
+    _h153 = exists_intro _h152, tC
+    _h154 = and_intro _h115, _h153
+    _h155 = iff_elim_r _h150, _h154
+    _h156 = exists_intro _h155
+    _h157 = exists_intro _h156
+    _h158 = implies_intro _h157
+    _h159 = implies_intro _h158
+    _h160 = forall_intro _h159
+    _h161 = implies_intro _h160
+    _h162 = forall_intro _h161
+    _h163 = implies_intro _h162
+    _h164 = forall_intro _h163
+    _h165 = implies_intro _h164
+    _h166 = implies_intro _h165
+    _h167 = forall_intro _h166
+    _h168 = forall_elim _h36, s0
+    _h169 = implies_elim _h168, _h37
+    _h170 = implies_elim _h89, _h167
+    _h171 = iff_elim_l _h169, _h170
+    _h172 = and_elim_r _h171
+    _h173 = implies_intro _h172
+    _h174 = implies_intro _h173
+    _h175 = forall_intro _h174
+    _h176 = exists_intro _h175
+    _h177 = implies_intro _h176
+    _h178 = implies_intro _h177
+    _h179 = implies_intro _h178
+    _h180 = implies_intro _h179
+    _h181 = forall_intro _h180
+    _h182 = implies_intro _h181
+    _h183 = forall_intro _h182
+    _h184 = implies_intro _h183
+    _h185 = forall_intro _h184
+    _h186 = implies_intro _h185
+    _h187 = forall_intro _h186
+    _h188 = implies_intro _h187
+    _h189 = forall_intro _h188
+    _h190 = implies_intro _h189
+    _h191 = forall_intro _h190
+    _h192 = implies_intro _h191
+    _h193 = forall_intro _h192
+    qed _h193
+
+proof Sys.simulation_safety:
+    _h1 = use Sys.simulation_reach
+    fix S1
+    _h2 = assume set(S1)
+    fix step1
+    _h3 = assume set(step1)
+    fix Init1
+    _h4 = assume set(Init1)
+    fix S2
+    _h5 = assume set(S2)
+    fix step2
+    _h6 = assume set(step2)
+    fix Init2
+    _h7 = assume set(Init2)
+    fix R
+    _h8 = assume set(R)
+    fix P
+    _h9 = assume set(P)
+    fix Q
+    _h10 = assume set(Q)
+    _h11 = assume (forall u. (set(u) -> (elem(u, Init1) -> elem(u, S1))))
+    _h12 = assume (forall x. (set(x) -> (elem(x, S1) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step1, x, a, b, u) -> elem(u, S1)))))))))))
+    _h13 = assume Sys.simulation(step1, Init1, step2, Init2, R)
+    _h14 = assume (forall t. (set(t) -> (Sys.reachable(S2, step2, Init2, t) -> elem(t, Q))))
+    _h15 = assume (forall s. (set(s) -> (forall t. (set(t) -> (Sys.related(R, s, t) -> (elem(t, Q) -> elem(s, P)))))))
+    fix s0
+    _h16 = assume set(s0)
+    _h17 = assume Sys.reachable(S1, step1, Init1, s0)
+    _h18 = forall_elim _h1, S1
+    _h19 = implies_elim _h18, _h2
+    _h20 = forall_elim _h19, step1
+    _h21 = implies_elim _h20, _h3
+    _h22 = forall_elim _h21, Init1
+    _h23 = implies_elim _h22, _h4
+    _h24 = forall_elim _h23, S2
+    _h25 = implies_elim _h24, _h5
+    _h26 = forall_elim _h25, step2
+    _h27 = implies_elim _h26, _h6
+    _h28 = forall_elim _h27, Init2
+    _h29 = implies_elim _h28, _h7
+    _h30 = forall_elim _h29, R
+    _h31 = implies_elim _h30, _h8
+    _h32 = implies_elim _h31, _h11
+    _h33 = implies_elim _h32, _h12
+    _h34 = implies_elim _h33, _h13
+    _h35 = forall_elim _h34, s0
+    _h36 = implies_elim _h35, _h16
+    _h37 = implies_elim _h36, _h17
+    _h38 = exists_elim _h37, t0
+    _h39 = and_elim_l _h38
+    _h40 = and_elim_r _h38
+    _h41 = and_elim_l _h40
+    _h42 = and_elim_r _h40
+    _h43 = forall_elim _h14, t0
+    _h44 = implies_elim _h43, _h39
+    _h45 = implies_elim _h44, _h41
+    _h46 = forall_elim _h15, s0
+    _h47 = implies_elim _h46, _h16
+    _h48 = forall_elim _h47, t0
+    _h49 = implies_elim _h48, _h39
+    _h50 = implies_elim _h49, _h42
+    _h51 = implies_elim _h50, _h45
+    _h52 = exists_intro _h51
+    _h53 = implies_intro _h52
+    _h54 = implies_intro _h53
+    _h55 = forall_intro _h54
+    _h56 = implies_intro _h55
+    _h57 = implies_intro _h56
+    _h58 = implies_intro _h57
+    _h59 = implies_intro _h58
+    _h60 = implies_intro _h59
+    _h61 = implies_intro _h60
+    _h62 = forall_intro _h61
+    _h63 = implies_intro _h62
+    _h64 = forall_intro _h63
+    _h65 = implies_intro _h64
+    _h66 = forall_intro _h65
+    _h67 = implies_intro _h66
+    _h68 = forall_intro _h67
+    _h69 = implies_intro _h68
+    _h70 = forall_intro _h69
+    _h71 = implies_intro _h70
+    _h72 = forall_intro _h71
+    _h73 = implies_intro _h72
+    _h74 = forall_intro _h73
+    _h75 = implies_intro _h74
+    _h76 = forall_intro _h75
+    _h77 = implies_intro _h76
+    _h78 = forall_intro _h77
+    qed _h78

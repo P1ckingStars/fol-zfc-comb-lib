@@ -1,0 +1,6 @@
+# ZF's succ is base's nsucc.
+claim Sys.succ_nsucc: (forall S. (ZF_Base.succ(S) ->
+    (forall j. (set(j) -> (forall t. (set(t) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, j, t)))) -> (forall r. (set(r) -> (pmem(t, r, S) -> nsucc(j, r)))))))))))
+
+# The bridge (decision 12): base's natural numbers are ZF's nat.
+claim Sys.natural_nat: (forall n. (set(n) -> (Sys.natural(n) <-> (forall N. (set(N) -> (Nat.nat(N) -> elem(n, N)))))))

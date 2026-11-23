@@ -1,0 +1,108 @@
+load("//build:fol.bzl", "fol_proof")
+load("//src/machines/class:defs.bzl", "class_claim")
+
+package(default_visibility = ["//math:__subpackages__"])
+
+fol_proof(
+    name = "basic",
+    header = "basic.fol.def",
+    proof = "basic.fol.proof",
+    deps = ["//lib:base"],
+)
+
+fol_proof(
+    name = "reach",
+    header = "reach.fol.def",
+    proof = "reach.fol.proof",
+    deps = [
+        ":basic",
+        "@zf//:ZF.Fixedpt",
+    ],
+)
+
+fol_proof(
+    name = "bisim",
+    header = "bisim.fol.def",
+    proof = "bisim.fol.proof",
+    deps = [
+        ":basic",
+        "@zf//:ZF.Fixedpt",
+    ],
+)
+
+# The class machine's claims the systems library cites. related_reachable: the states related by R to a reachable
+# state of a system, as a set inside any set (step 4's J).
+class_claim(
+    name = "related_reachable_gen",
+    request = "related_reachable.req",
+    deps = [":reach"],
+    out_def = "related_reachable.fol.def",
+    out_proof = "related_reachable.fol.proof",
+)
+
+fol_proof(
+    name = "related_reachable",
+    header = "related_reachable.fol.def",
+    proof = "related_reachable.fol.proof",
+    deps = [":reach"],
+)
+
+fol_proof(
+    name = "simulation",
+    header = "simulation.fol.def",
+    proof = "simulation.fol.proof",
+    deps = [":related_reachable"],
+)
+
+# natural_exact: the class of the natural numbers, in the shape ZF's nat_induct is cited at.
+class_claim(
+    name = "natural_exact_gen",
+    request = "natural_exact.req",
+    deps = [":basic"],
+    out_def = "natural_exact.fol.def",
+    out_proof = "natural_exact.fol.proof",
+)
+
+fol_proof(
+    name = "natural_exact",
+    header = "natural_exact.fol.def",
+    proof = "natural_exact.fol.proof",
+    deps = [":basic"],
+)
+
+fol_proof(
+    name = "natural",
+    header = "natural.fol.def",
+    proof = "natural.fol.proof",
+    deps = [
+        ":natural_exact",
+        "@zf//:ZF.Nat",
+    ],
+)
+
+# trace_prefix: the k at which the spec has a run matching a trace's first k steps, its state at k related to the
+# implementation's (the induction behind Sys.simulation_refines).
+class_claim(
+    name = "trace_prefix_gen",
+    request = "trace_prefix.req",
+    deps = [":basic"],
+    out_def = "trace_prefix.fol.def",
+    out_proof = "trace_prefix.fol.proof",
+)
+
+fol_proof(
+    name = "trace_prefix",
+    header = "trace_prefix.fol.def",
+    proof = "trace_prefix.fol.proof",
+    deps = [":basic"],
+)
+
+fol_proof(
+    name = "traces",
+    header = "traces.fol.def",
+    proof = "traces.fol.proof",
+    deps = [
+        ":simulation",
+        ":trace_prefix",
+    ],
+)

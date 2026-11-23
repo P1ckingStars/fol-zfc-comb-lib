@@ -1,0 +1,29 @@
+@def(Sys.bisimulation) axiom Sys.bisimulation_def: (forall step1. (forall step2. (forall R.
+    (Sys.bisimulation(step1, step2, R) <->
+    (forall x. (set(x) -> (forall y. (set(y) -> (Sys.related(R, x, y) ->
+    ((forall a. (set(a) -> (forall b. (set(b) -> (forall x2. (set(x2) -> (Sys.transition(step1, x, a, b, x2) -> (exists y2. (set(y2) & (Sys.transition(step2, y, a, b, y2) & Sys.related(R, x2, y2))))))))))) &
+    (forall a. (set(a) -> (forall b. (set(b) -> (forall y2. (set(y2) -> (Sys.transition(step2, y, a, b, y2) -> (exists x2. (set(x2) & (Sys.transition(step1, x, a, b, x2) & Sys.related(R, x2, y2)))))))))))))))))))))
+
+@def(Sys.bisimilar) axiom Sys.bisimilar_def: (forall S1. (forall step1. (forall S2. (forall step2. (forall s. (forall t.
+    (Sys.bisimilar(S1, step1, S2, step2, s, t) <->
+    (exists R. (set(R) & ((forall q. (set(q) -> (elem(q, R) -> (exists x. (set(x) & (elem(x, S1) & (exists y. (set(y) & (elem(y, S2) & Sys.tuple2(q, x, y)))))))))) &
+    (Sys.bisimulation(step1, step2, R) & Sys.related(R, s, t))))))))))))
+
+# The bridge (sys2fol DESIGN.md §4): bisimilar is Fixedpt's gfp, for every g of the GRAPH shape with bound D.
+claim Sys.bisimilar_gfp: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall D. (set(D) ->
+    ((forall x. (set(x) -> (elem(x, S1) -> (forall y. (set(y) -> (elem(y, S2) -> (forall q. (set(q) -> (Sys.tuple2(q, x, y) -> elem(q, D)))))))))) ->
+    (forall g. (function(g) ->
+    ((forall X. (set(X) -> (forall t. (set(t) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t)))) -> (forall r. (set(r) -> (apply(t, r, g) <->
+    (forall q. (set(q) -> (elem(q, r) <-> (elem(q, D) & ((exists x. (set(x) & (elem(x, S1) & (exists y. (set(y) & (elem(y, S2) & Sys.tuple2(q, x, y))))))) &
+    (forall x. (set(x) -> (forall y. (set(y) -> (Sys.tuple2(q, x, y) -> ((forall a. (set(a) -> (forall b. (set(b) -> (forall x2. (set(x2) -> (Sys.transition(step1, x, a, b, x2) -> (exists y2. (set(y2) & (Sys.transition(step2, y, a, b, y2) & Sys.related(X, x2, y2))))))))))) & (forall a. (set(a) -> (forall b. (set(b) -> (forall y2. (set(y2) -> (Sys.transition(step2, y, a, b, y2) -> (exists x2. (set(x2) & (Sys.transition(step1, x, a, b, x2) & Sys.related(X, x2, y2)))))))))))))))))))))))))))))) ->
+    (forall G. ((forall t. (set(t) -> (forall r. (set(r) -> (pmem(t, r, G) <-> (exists X. (set(X) & ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t)))) & (forall t2. (set(t2) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t2)))) -> (forall r2. (set(r2) -> (apply(t2, r2, g) -> eq(r, r2))))))))))))))) ->
+    (forall L. (Fixedpt.gfp(L, G) ->
+    (forall tD. (set(tD) -> ((forall z. (set(z) -> (zero(z) -> snoc(z, z, D, tD)))) ->
+    (forall P. (set(P) -> (pmem(tD, P, L) ->
+    (forall s. (set(s) -> (forall t. (set(t) -> (Sys.bisimilar(S1, step1, S2, step2, s, t) <-> Sys.related(P, s, t))))))))))))))))))))))))))))))
+
+# Coinduction: a bisimulation within S1 x S2 relates only bisimilar states.
+claim Sys.coinduction: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall R. (set(R) ->
+    ((forall q. (set(q) -> (elem(q, R) -> (exists x. (set(x) & (elem(x, S1) & (exists y. (set(y) & (elem(y, S2) & Sys.tuple2(q, x, y)))))))))) ->
+    (Sys.bisimulation(step1, step2, R) ->
+    (forall s. (set(s) -> (forall t. (set(t) -> (Sys.related(R, s, t) -> Sys.bisimilar(S1, step1, S2, step2, s, t))))))))))))))))))

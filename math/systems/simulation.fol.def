@@ -1,0 +1,20 @@
+# Step 4 (sys2fol DESIGN.md §3, §7, decision 10): the lock-step forward simulation, and the theorems that
+# carry the spec's reachable states, and so its safety properties, to the implementation.
+@def(Sys.simulation) axiom Sys.simulation_def: (forall step1. (forall Init1. (forall step2. (forall Init2. (forall R.
+    (Sys.simulation(step1, Init1, step2, Init2, R) <->
+    ((forall s. (set(s) -> (elem(s, Init1) -> (exists t. (set(t) & (elem(t, Init2) & Sys.related(R, s, t))))))) &
+    (forall s. (set(s) -> (forall t. (set(t) -> (Sys.related(R, s, t) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall x2. (set(x2) -> (Sys.transition(step1, s, a, b, x2) -> (exists y2. (set(y2) & (Sys.transition(step2, t, a, b, y2) & Sys.related(R, x2, y2)))))))))))))))))))))))
+
+claim Sys.simulation_reach: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) -> (forall R. (set(R) ->
+    ((forall u. (set(u) -> (elem(u, Init1) -> elem(u, S1)))) ->
+    ((forall x. (set(x) -> (elem(x, S1) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step1, x, a, b, u) -> elem(u, S1))))))))))) ->
+    (Sys.simulation(step1, Init1, step2, Init2, R) ->
+    (forall s. (set(s) -> (Sys.reachable(S1, step1, Init1, s) -> (exists t. (set(t) & (Sys.reachable(S2, step2, Init2, t) & Sys.related(R, s, t))))))))))))))))))))))))
+
+claim Sys.simulation_safety: (forall S1. (set(S1) -> (forall step1. (set(step1) -> (forall Init1. (set(Init1) -> (forall S2. (set(S2) -> (forall step2. (set(step2) -> (forall Init2. (set(Init2) -> (forall R. (set(R) -> (forall P. (set(P) -> (forall Q. (set(Q) ->
+    ((forall u. (set(u) -> (elem(u, Init1) -> elem(u, S1)))) ->
+    ((forall x. (set(x) -> (elem(x, S1) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step1, x, a, b, u) -> elem(u, S1))))))))))) ->
+    (Sys.simulation(step1, Init1, step2, Init2, R) ->
+    ((forall t. (set(t) -> (Sys.reachable(S2, step2, Init2, t) -> elem(t, Q)))) ->
+    ((forall s. (set(s) -> (forall t. (set(t) -> (Sys.related(R, s, t) -> (elem(t, Q) -> elem(s, P))))))) ->
+    (forall s. (set(s) -> (Sys.reachable(S1, step1, Init1, s) -> elem(s, P)))))))))))))))))))))))))))

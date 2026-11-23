@@ -1,0 +1,4 @@
+shape: EXACT
+var: x
+params:
+formula: Sys.natural(x)

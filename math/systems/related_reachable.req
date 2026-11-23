@@ -1,0 +1,4 @@
+shape: SET
+var: x
+params: S2 set, step2 set, Init2 set, R set
+formula: (exists y. (set(y) & (Sys.reachable(S2, step2, Init2, y) & Sys.related(R, x, y))))

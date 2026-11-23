@@ -1,0 +1,40 @@
+# The systems layer (sys2fol DESIGN.md §3, §4). A system is S (its states), A (inputs), B (outputs), step (its steps,
+# the 4-tuples <s, a, b, t>: from s, on input a, output b, to t) and Init (initial states).
+
+@def(Sys.tuple4) axiom Sys.tuple4_def: (forall q. (forall x0. (forall x1. (forall x2. (forall x3.
+    (Sys.tuple4(q, x0, x1, x2, x3) <-> (forall z. (set(z) -> (zero(z) -> (forall n1. (set(n1) -> (nsucc(z, n1) -> (forall n2. (set(n2) -> (nsucc(n1, n2) ->
+    (forall n3. (set(n3) -> (nsucc(n2, n3) -> (forall n4. (set(n4) -> (nsucc(n3, n4) ->
+    (tuple(q, n4) & (pmem(z, x0, q) & (pmem(n1, x1, q) & (pmem(n2, x2, q) & pmem(n3, x3, q))))))))))))))))))))))))))
+
+@def(Sys.transition) axiom Sys.transition_def: (forall step. (forall s. (forall a. (forall b. (forall t.
+    (Sys.transition(step, s, a, b, t) <-> (exists q. (set(q) & (elem(q, step) & Sys.tuple4(q, s, a, b, t))))))))))
+
+@def(Sys.wellformed) axiom Sys.wellformed_def: (forall S. (forall A. (forall B. (forall step. (forall Init.
+    (Sys.wellformed(S, A, B, step, Init) <->
+    ((forall u. (set(u) -> (elem(u, Init) -> elem(u, S)))) &
+    ((forall q. (set(q) -> (elem(q, step) -> (exists s. (set(s) & (elem(s, S) & (exists a. (set(a) & (elem(a, A) &
+    (exists b. (set(b) & (elem(b, B) & (exists t. (set(t) & (elem(t, S) & Sys.tuple4(q, s, a, b, t)))))))))))))))) &
+    (forall s. (set(s) -> (elem(s, S) -> (forall a. (set(a) -> (elem(a, A) -> (exists b. (set(b) & (exists t. (set(t) & Sys.transition(step, s, a, b, t)))))))))))))))))))
+
+claim Sys.tuple1_EX: (forall X. (set(X) -> (exists t. (set(t) & (forall z. (set(z) -> (zero(z) -> snoc(z, z, X, t))))))))
+
+claim Sys.wellformed_init: (forall S. (forall A. (forall B. (forall step. (forall Init.
+    (Sys.wellformed(S, A, B, step, Init) -> (forall u. (set(u) -> (elem(u, Init) -> elem(u, S))))))))))
+
+claim Sys.wellformed_target: (forall S. (forall A. (forall B. (forall step. (forall Init.
+    (Sys.wellformed(S, A, B, step, Init) ->
+    (forall x. (set(x) -> (elem(x, S) -> (forall a. (set(a) -> (forall b. (set(b) -> (forall u. (set(u) -> (Sys.transition(step, x, a, b, u) -> elem(u, S)))))))))))))))))
+
+@def(Sys.tuple2) axiom Sys.tuple2_def: (forall q. (forall x0. (forall x1.
+    (Sys.tuple2(q, x0, x1) <-> (forall z. (set(z) -> (zero(z) -> (forall n1. (set(n1) -> (nsucc(z, n1) -> (forall n2. (set(n2) -> (nsucc(n1, n2) ->
+    (tuple(q, n2) & (pmem(z, x0, q) & pmem(n1, x1, q))))))))))))))))
+
+@def(Sys.related) axiom Sys.related_def: (forall R. (forall x. (forall y.
+    (Sys.related(R, x, y) <-> (exists q. (set(q) & (elem(q, R) & Sys.tuple2(q, x, y))))))))
+
+claim Sys.related_mono: (forall R. (forall R2.
+    ((forall u. (set(u) -> (elem(u, R) -> elem(u, R2)))) ->
+    (forall x. (set(x) -> (forall y. (set(y) -> (Sys.related(R, x, y) -> Sys.related(R2, x, y)))))))))
+
+# n is a natural number: a member of every inductive set, the same ω as ZF's nat (Sys.natural_nat).
+@def(Sys.natural) axiom Sys.natural_def: (forall n. (Sys.natural(n) <-> (forall z. (set(z) -> (ind(z) -> elem(n, z))))))
