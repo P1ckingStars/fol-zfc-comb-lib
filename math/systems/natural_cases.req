@@ -1,0 +1,4 @@
+shape: SET
+var: w
+params: 
+formula: (zero(w) | (exists m. (set(m) & nsucc(m, w))))

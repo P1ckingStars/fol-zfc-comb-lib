@@ -1,0 +1,29 @@
+# Natural numbers and their order, from ZF's nat through Sys.natural_nat, and a tuple of natural length: its first
+# entry and its rest. Proved once and cited by every proof sysprove writes (sys2fol DESIGN.md, decision 21).
+
+claim Sys.natural_cong: (forall n. (set(n) -> (forall m. (set(m) -> (eq(n, m) -> (Sys.natural(n) -> Sys.natural(m)))))))
+
+claim Sys.natural_succ: (forall n. (set(n) -> (forall m. (set(m) -> (Sys.natural(n) -> (nsucc(n, m) -> Sys.natural(m)))))))
+
+claim Sys.natural_elem: (forall n. (set(n) -> (forall m. (set(m) -> (Sys.natural(n) -> (elem(m, n) -> Sys.natural(m)))))))
+
+claim Sys.natural_pred: (forall m. (set(m) -> (forall n. (set(n) -> (Sys.natural(n) -> (nsucc(m, n) -> Sys.natural(m)))))))
+
+claim Sys.natural_zero_or_succ: (forall n. (set(n) -> (Sys.natural(n) -> (zero(n) | (exists m. (set(m) & nsucc(m, n)))))))
+
+claim Sys.natural_index: (forall n. (set(n) -> (Sys.natural(n) -> index(n))))
+
+claim Sys.natural_trichotomy: (forall m. (set(m) -> (forall c. (set(c) -> (Sys.natural(m) -> (Sys.natural(c) -> (elem(m, c) | (eq(m, c) | elem(c, m)))))))))
+
+claim Sys.natural_succ_le: (forall m. (set(m) -> (forall c. (set(c) -> (forall s. (set(s) -> (Sys.natural(m) -> (Sys.natural(c) -> (elem(m, c) -> (nsucc(m, s) -> (elem(s, c) | eq(s, c))))))))))))
+
+claim Sys.tuple_rest: (forall t. (set(t) -> (forall n. (set(n) -> (forall m. (set(m) -> (tuple(t, n) -> (nsucc(m, n) -> (Sys.natural(n) -> (exists r. (set(r) & (tuple(r, m) & (forall i. (set(i) -> (forall j. (set(j) -> (nsucc(i, j) -> (forall y. (set(y) -> (pmem(j, y, t) <-> pmem(i, y, r)))))))))))))))))))))
+
+claim Sys.natural_zero: (forall z. (set(z) -> (zero(z) -> Sys.natural(z))))
+
+claim Sys.natural_zero_le: (forall z. (set(z) -> (forall c. (set(c) -> (zero(z) -> (Sys.natural(c) -> (elem(z, c) | eq(z, c))))))))
+
+claim Sys.tuple_first: (forall t. (set(t) -> (forall n. (set(n) -> (tuple(t, n) -> (Sys.natural(n) -> ((~ zero(n)) -> (exists y. (set(y) & (forall n2. (set(n2) -> (zero(n2) -> pmem(n2, y, t)))))))))))))
+
+claim Sys.natural_pred_le: (forall m. (set(m) -> (forall n. (set(n) -> (forall c. (set(c) -> (Sys.natural(c) -> (nsucc(m, n) -> ((elem(n, c) | eq(n, c)) -> (elem(m, c) | eq(m, c)))))))))))
+

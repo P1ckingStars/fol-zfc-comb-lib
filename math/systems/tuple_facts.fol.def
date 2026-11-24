@@ -1,0 +1,23 @@
+# The foundation's numerals and tuples: congruences, a tuple's one length, and the powersets a pair and a tuple
+# lie in. Proved once and cited by every proof sysprove writes (sys2fol DESIGN.md, decision 21).
+
+claim Sys.nsucc_cong2: (forall n. (set(n) -> (forall m. (set(m) -> (forall m2. (set(m2) -> (eq(m, m2) -> (nsucc(n, m) -> nsucc(n, m2)))))))))
+
+claim Sys.pmem_cong3: (forall i. (set(i) -> (forall y. (set(y) -> (forall r. (set(r) -> (forall r2. (set(r2) -> (eq(r, r2) -> (pmem(i, y, r) -> pmem(i, y, r2)))))))))))
+
+claim Sys.tuple_cong1: (forall t. (set(t) -> (forall t2. (set(t2) -> (forall n. (set(n) -> (eq(t, t2) -> (tuple(t, n) -> tuple(t2, n)))))))))
+
+claim Sys.tuple_length_unique: (forall t. (set(t) -> (forall n. (set(n) -> (forall m. (set(m) -> (tuple(t, n) -> (tuple(t, m) -> eq(n, m)))))))))
+
+claim Sys.tuple_cong2: (forall t. (set(t) -> (forall n. (set(n) -> (forall m. (set(m) -> (eq(n, m) -> (tuple(t, n) -> tuple(t, m)))))))))
+
+claim Sys.tuple_length_zero: (forall t. (set(t) -> (forall n. (set(n) -> (tuple(t, n) -> (zero(n) -> zero(t)))))))
+
+claim Sys.kpair_pow: (forall i. (set(i) -> (forall y. (set(y) -> (forall v. (set(v) -> (forall w. (set(w) -> (forall p. (set(p) -> (forall p2. (set(p2) -> (kpair(i, y, v) -> (elem(i, w) -> (elem(y, w) -> (Pow(w, p) -> (Pow(p, p2) -> elem(v, p2))))))))))))))))))
+
+claim Sys.pmem_cong2: (forall i. (set(i) -> (forall y. (set(y) -> (forall y2. (set(y2) -> (forall r. (set(r) -> (eq(y, y2) -> (pmem(i, y, r) -> pmem(i, y2, r)))))))))))
+
+claim Sys.zero_cong: (forall x. (set(x) -> (forall y. (set(y) -> (eq(x, y) -> (zero(x) -> zero(y)))))))
+
+claim Sys.tuple_pow: (forall t. (set(t) -> (forall n. (set(n) -> (forall w. (set(w) -> (forall p. (set(p) -> (forall p2. (set(p2) -> (forall p3. (set(p3) -> (tuple(t, n) -> ((forall i. (set(i) -> (elem(i, n) -> elem(i, w)))) -> ((forall i2. (set(i2) -> (forall y. (set(y) -> (pmem(i2, y, t) -> elem(y, w)))))) -> (Pow(w, p) -> (Pow(p, p2) -> (Pow(p2, p3) -> elem(t, p3)))))))))))))))))))
+

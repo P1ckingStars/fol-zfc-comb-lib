@@ -1,0 +1,4 @@
+shape: SET
+var: w
+params: par_v set
+formula: (exists i. (set(i) & (exists y. (set(y) & (kpair(i, y, w) & (exists j. (set(j) & (nsucc(i, j) & pmem(j, y, par_v)))))))))

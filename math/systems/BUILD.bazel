@@ -107,6 +107,52 @@ fol_proof(
     ],
 )
 
+# The facts sys2fol's proofs cite, proved once (sys2fol DESIGN.md, decision 21): sysprove wrote their proofs and the
+# compression machine shortened them.
+fol_proof(
+    name = "tuple_facts",
+    header = "tuple_facts.fol.def",
+    proof = "tuple_facts.fol.proof",
+    deps = ["//lib:base"],
+)
+
+# natural_cases: the naturals that are 0 or a successor. rest_pairs: a tuple's entries shifted down by one.
+[class_claim(
+    name = s + "_gen",
+    request = s + ".req",
+    deps = [":basic"],
+    out_def = s + ".fol.def",
+    out_proof = s + ".fol.proof",
+) for s in [
+    "natural_cases",
+    "rest_pairs",
+]]
+
+[fol_proof(
+    name = s,
+    header = s + ".fol.def",
+    proof = s + ".fol.proof",
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
+) for s in [
+    "natural_cases",
+    "rest_pairs",
+]]
+
+fol_proof(
+    name = "natural_facts",
+    header = "natural_facts.fol.def",
+    proof = "natural_facts.fol.proof",
+    deps = [
+        ":natural",
+        ":natural_cases",
+        ":rest_pairs",
+        ":tuple_facts",
+    ],
+)
+
 # trace_prefix: the k at which the spec has a run matching a trace's first k steps, its state at k related to the
 # implementation's (the induction behind Sys.simulation_refines).
 class_claim(

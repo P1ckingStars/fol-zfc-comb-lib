@@ -53,13 +53,17 @@ Every block of these outputs is rewritten and every report is Proved:
 
 | Proofs | Lines in → out | Bytes in → out |
 |---|---|---|
-| Class machine, sys2fol's 13 requests | 12,168 → 12,063 | 669 KB → 379 KB |
+| Class machine, 13 requests: sys2fol's 11, and `math/systems`' `natural_cases` and `rest_pairs` | 12,168 → 12,063 | 669 KB → 379 KB |
 | Class machine, its 17 rows | 15,753 → 15,542 | 589 KB → 321 KB |
-| sysprove, BoundedQueue's claims | 5,687 → 5,126 | 366 KB → 161 KB |
-| sysprove, BoundedQueue's lemmas | 4,998 → 4,867 | 206 KB → 103 KB |
-| sysprove, Crossing's claims | 4,343 → 3,094 | 228 KB → 79 KB |
-| sysprove, Crossing's lemmas | 3,185 → 2,728 | 130 KB → 57 KB |
-| `math/systems`, hand-written and machine-made | 20,143 → 18,541 | 777 KB → 394 KB |
+| sysprove, BoundedQueue's claims | 5,666 → 5,105 | 365 KB → 160 KB |
+| sysprove, BoundedQueue's step typing | 1,314 → 1,299 | 85 KB → 39 KB |
+| sysprove, Crossing's claims | 4,336 → 3,087 | 228 KB → 78 KB |
+| sysprove, Crossing's step typing | 954 → 576 | 56 KB → 18 KB |
+| sysprove, the two specs' 31 instances | 2,166 → 2,083 | 70 KB → 38 KB |
+| `math/systems`, its hand-written proofs | 4,939 → 4,743 | 162 KB → 89 KB |
+
+`math/systems`' `tuple_facts` and `natural_facts` are sysprove's proofs as this machine wrote them (sys2fol `DESIGN.md`,
+decision 21).
 
 A pass costs about one check: it loads the libraries as `proof_checker` does, and its replays take less.
 

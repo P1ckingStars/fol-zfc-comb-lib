@@ -165,8 +165,8 @@ A formula outside the gate (§3) is refused with its reason: no claim and no pro
 ## 6. Cost
 
 isa2fol's class proofs: 3,502 in the pinned unit, 500–1,500 lines each for the small formulas of `ZF.Fixedpt`. A node
-costs a constant; a quantifier, besides, three steps for each entry its body reads. sys2fol's 13 requests: 12,063 lines
-and 379 KB once compressed, the largest, a step relation's, 5,618; the machine's 17 rows, made once, 15,542.
+costs a constant; a quantifier, besides, three steps for each entry its body reads. sys2fol's 11 requests: 11,357 lines
+and 365 KB once compressed, the largest, a step relation's, 5,618; the machine's 17 rows, made once, 15,542.
 `proof_checker` checks the step relation's in 1.9 seconds, nearly all of it loading the libraries: a 300-line set takes
 as long.
 
