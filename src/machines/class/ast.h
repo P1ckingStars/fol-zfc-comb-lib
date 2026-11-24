@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -37,14 +38,21 @@ Ptr unary(K k, Ptr a);
 Ptr binary(K k, Ptr a, Ptr b);
 Ptr quant(K k, const std::string& v, Ptr body);
 
-// Fresh names for bound variables.
+// Fresh names for bound variables, none of them in `avoid`: the names a request gives, which a fresh name would capture.
 class Fresh {
 public:
-    explicit Fresh(std::string prefix) : prefix_(std::move(prefix)) {}
-    std::string operator()() { return prefix_ + std::to_string(++n_); }
+    explicit Fresh(std::string prefix, const std::set<std::string>* avoid = nullptr)
+        : prefix_(std::move(prefix)), avoid_(avoid) {}
+    std::string operator()() {
+        std::string s;
+        do s = prefix_ + std::to_string(++n_);
+        while (avoid_ && avoid_->count(s));
+        return s;
+    }
 
 private:
     std::string prefix_;
+    const std::set<std::string>* avoid_;
     int n_ = 0;
 };
 

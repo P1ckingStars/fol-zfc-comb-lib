@@ -1,0 +1,4 @@
+shape: ROW
+var: r x0 x1
+params:
+formula: (forall z0. (set(z0) -> (zero(z0) -> (forall z1. (set(z1) -> (nsucc(z0, z1) -> (forall z2. (set(z2) -> (nsucc(z1, z2) -> (tuple(r, z2) & (pmem(z0, x0, r) & pmem(z1, x1, r))))))))))))

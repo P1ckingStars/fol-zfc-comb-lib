@@ -1,0 +1,4 @@
+shape: ROW
+var: u v w
+params:
+formula: upair(u, v, w)

@@ -1,0 +1,294 @@
+proof node_not:
+    _h1 = assume (X <-> (~ P))
+    _h2 = assume (P <-> A)
+    _x = assume X
+    _np = iff_elim_l _h1, _x
+    _a = assume A
+    _p = iff_elim_r _h2, _a
+    _bot = not_elim _np, _p
+    _na = not_intro _bot
+    _f = implies_intro _na
+    _na2 = assume (~ A)
+    _p2 = assume P
+    _a2 = iff_elim_l _h2, _p2
+    _bot2 = not_elim _na2, _a2
+    _np2 = not_intro _bot2
+    _x2 = iff_elim_r _h1, _np2
+    _g = implies_intro _x2
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    qed _o2
+
+proof node_and:
+    _h1 = assume (X <-> (P & Q))
+    _h2 = assume (P <-> A)
+    _h3 = assume (Q <-> B)
+    _x = assume X
+    _pq = iff_elim_l _h1, _x
+    _p = and_elim_l _pq
+    _q = and_elim_r _pq
+    _a = iff_elim_l _h2, _p
+    _b = iff_elim_l _h3, _q
+    _ab = and_intro _a, _b
+    _f = implies_intro _ab
+    _ab2 = assume (A & B)
+    _a2 = and_elim_l _ab2
+    _b2 = and_elim_r _ab2
+    _p2 = iff_elim_r _h2, _a2
+    _q2 = iff_elim_r _h3, _b2
+    _pq2 = and_intro _p2, _q2
+    _x2 = iff_elim_r _h1, _pq2
+    _g = implies_intro _x2
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = implies_intro _o2
+    qed _o3
+
+proof node_or:
+    _h1 = assume (X <-> (P | Q))
+    _h2 = assume (P <-> A)
+    _h3 = assume (Q <-> B)
+    _x = assume X
+    _pq = iff_elim_l _h1, _x
+    _cp = assume P
+    _a = iff_elim_l _h2, _cp
+    _lb = let B
+    _ab1 = or_intro_l _a, _lb
+    _c1 = implies_intro _ab1
+    _cq = assume Q
+    _b = iff_elim_l _h3, _cq
+    _la = let A
+    _ab2 = or_intro_r _la, _b
+    _c2 = implies_intro _ab2
+    _ab = or_elim _pq, _c1, _c2
+    _f = implies_intro _ab
+    _hab = assume (A | B)
+    _ca = assume A
+    _p = iff_elim_r _h2, _ca
+    _lq = let Q
+    _pq1 = or_intro_l _p, _lq
+    _x1 = iff_elim_r _h1, _pq1
+    _d1 = implies_intro _x1
+    _cb = assume B
+    _q = iff_elim_r _h3, _cb
+    _lp = let P
+    _pq2 = or_intro_r _lp, _q
+    _x2 = iff_elim_r _h1, _pq2
+    _d2 = implies_intro _x2
+    _x3 = or_elim _hab, _d1, _d2
+    _g = implies_intro _x3
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = implies_intro _o2
+    qed _o3
+
+proof node_imp:
+    _h1 = assume (X <-> (P -> Q))
+    _h2 = assume (P <-> A)
+    _h3 = assume (Q <-> B)
+    _x = assume X
+    _pq = iff_elim_l _h1, _x
+    _a = assume A
+    _p = iff_elim_r _h2, _a
+    _q = implies_elim _pq, _p
+    _b = iff_elim_l _h3, _q
+    _ab = implies_intro _b
+    _f = implies_intro _ab
+    _hab = assume (A -> B)
+    _p2 = assume P
+    _a2 = iff_elim_l _h2, _p2
+    _b2 = implies_elim _hab, _a2
+    _q2 = iff_elim_r _h3, _b2
+    _pq2 = implies_intro _q2
+    _x2 = iff_elim_r _h1, _pq2
+    _g = implies_intro _x2
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = implies_intro _o2
+    qed _o3
+
+proof node_iff:
+    _h1 = assume (X <-> (P <-> Q))
+    _h2 = assume (P <-> A)
+    _h3 = assume (Q <-> B)
+    _x = assume X
+    _pq = iff_elim_l _h1, _x
+    _a = assume A
+    _p = iff_elim_r _h2, _a
+    _q = iff_elim_l _pq, _p
+    _b = iff_elim_l _h3, _q
+    _ab = implies_intro _b
+    _b1 = assume B
+    _q1 = iff_elim_r _h3, _b1
+    _p1 = iff_elim_r _pq, _q1
+    _a1 = iff_elim_l _h2, _p1
+    _ba = implies_intro _a1
+    _abi = iff_intro _ab, _ba
+    _f = implies_intro _abi
+    _hab = assume (A <-> B)
+    _p2 = assume P
+    _a2 = iff_elim_l _h2, _p2
+    _b2 = iff_elim_l _hab, _a2
+    _q2 = iff_elim_r _h3, _b2
+    _pq2 = implies_intro _q2
+    _q3 = assume Q
+    _b3 = iff_elim_l _h3, _q3
+    _a3 = iff_elim_r _hab, _b3
+    _p3 = iff_elim_r _h2, _a3
+    _qp3 = implies_intro _p3
+    _pqi = iff_intro _pq2, _qp3
+    _x2 = iff_elim_r _h1, _pqi
+    _g = implies_intro _x2
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = implies_intro _o2
+    qed _o3
+
+proof node_ex:
+    fix a
+    _sa = assume set(a)
+    fix k
+    _sk = assume set(k)
+    fix D
+    fix C
+    _row = assume (forall u. (set(u) -> (elem(u,C) <-> (exists v. (set(v) & (exists b. (set(b) & (snoc(u,k,v,b) & elem(b,D)))))))))
+    _at = assume (forall v. (set(v) -> (forall b. (set(b) -> (snoc(a,k,v,b) -> (elem(b,D) <-> P(v)))))))
+    _r1 = forall_elim _row, a
+    _ra = implies_elim _r1, _sa
+    _ac = assume elem(a,C)
+    _ex = iff_elim_l _ra, _ac
+    _e1 = exists_elim _ex, v1
+    _sv1 = and_elim_l _e1
+    _bx = and_elim_r _e1
+    _e2 = exists_elim _bx, b1
+    _sb1 = and_elim_l _e2
+    _sd = and_elim_r _e2
+    _sn1 = and_elim_l _sd
+    _bd1 = and_elim_r _sd
+    _a1 = forall_elim _at, v1
+    _a2 = implies_elim _a1, _sv1
+    _a3 = forall_elim _a2, b1
+    _a4 = implies_elim _a3, _sb1
+    _a5 = implies_elim _a4, _sn1
+    _pv1 = iff_elim_l _a5, _bd1
+    _c1 = and_intro _sv1, _pv1
+    _w1 = exists_intro _c1, v1
+    _k1 = exists_intro _w1
+    _k2 = exists_intro _k1
+    _f = implies_intro _k2
+    _hp = assume (exists v. (set(v) & P(v)))
+    _e3 = exists_elim _hp, v2
+    _sv2 = and_elim_l _e3
+    _pv2 = and_elim_r _e3
+    _s1 = use snoc_EX
+    _s2 = forall_elim _s1, a
+    _s3 = implies_elim _s2, _sa
+    _s4 = forall_elim _s3, k
+    _s5 = implies_elim _s4, _sk
+    _s6 = forall_elim _s5, v2
+    _s7 = implies_elim _s6, _sv2
+    _e4 = exists_elim _s7, b2
+    _sb2 = and_elim_l _e4
+    _sn2 = and_elim_r _e4
+    _b1 = forall_elim _at, v2
+    _b2 = implies_elim _b1, _sv2
+    _b3 = forall_elim _b2, b2
+    _b4 = implies_elim _b3, _sb2
+    _b5 = implies_elim _b4, _sn2
+    _bd2 = iff_elim_r _b5, _pv2
+    _c2 = and_intro _sn2, _bd2
+    _c3 = and_intro _sb2, _c2
+    _w2 = exists_intro _c3, b2
+    _c4 = and_intro _sv2, _w2
+    _w3 = exists_intro _c4, v2
+    _ac2 = iff_elim_r _ra, _w3
+    _k3 = exists_intro _ac2
+    _k4 = exists_intro _k3
+    _g = implies_intro _k4
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = forall_intro _o2
+    _o4 = forall_intro _o3
+    _o5 = implies_intro _o4
+    _o6 = forall_intro _o5
+    _o7 = implies_intro _o6
+    _o8 = forall_intro _o7
+    qed _o8
+
+proof node_all:
+    fix a
+    _sa = assume set(a)
+    fix k
+    _sk = assume set(k)
+    fix D
+    fix C
+    _row = assume (forall u. (set(u) -> (elem(u,C) <-> (forall v. (set(v) -> (forall b. (set(b) -> (snoc(u,k,v,b) -> elem(b,D)))))))))
+    _at = assume (forall v. (set(v) -> (forall b. (set(b) -> (snoc(a,k,v,b) -> (elem(b,D) <-> P(v)))))))
+    _r1 = forall_elim _row, a
+    _ra = implies_elim _r1, _sa
+    _ac = assume elem(a,C)
+    _all = iff_elim_l _ra, _ac
+    fix v1
+    _sv1 = assume set(v1)
+    _s1 = use snoc_EX
+    _s2 = forall_elim _s1, a
+    _s3 = implies_elim _s2, _sa
+    _s4 = forall_elim _s3, k
+    _s5 = implies_elim _s4, _sk
+    _s6 = forall_elim _s5, v1
+    _s7 = implies_elim _s6, _sv1
+    _e1 = exists_elim _s7, b1
+    _sb1 = and_elim_l _e1
+    _sn1 = and_elim_r _e1
+    _l1 = forall_elim _all, v1
+    _l2 = implies_elim _l1, _sv1
+    _l3 = forall_elim _l2, b1
+    _l4 = implies_elim _l3, _sb1
+    _bd1 = implies_elim _l4, _sn1
+    _a1 = forall_elim _at, v1
+    _a2 = implies_elim _a1, _sv1
+    _a3 = forall_elim _a2, b1
+    _a4 = implies_elim _a3, _sb1
+    _a5 = implies_elim _a4, _sn1
+    _pv1 = iff_elim_l _a5, _bd1
+    _k1 = exists_intro _pv1
+    _i1 = implies_intro _k1
+    _i2 = forall_intro _i1
+    _f = implies_intro _i2
+    _hp = assume (forall v. (set(v) -> P(v)))
+    fix v2
+    _sv2 = assume set(v2)
+    fix b2
+    _sb2 = assume set(b2)
+    _sn2 = assume snoc(a,k,v2,b2)
+    _p1 = forall_elim _hp, v2
+    _pv2 = implies_elim _p1, _sv2
+    _b1 = forall_elim _at, v2
+    _b2 = implies_elim _b1, _sv2
+    _b3 = forall_elim _b2, b2
+    _b4 = implies_elim _b3, _sb2
+    _b5 = implies_elim _b4, _sn2
+    _bd2 = iff_elim_r _b5, _pv2
+    _j1 = implies_intro _bd2
+    _j2 = implies_intro _j1
+    _j3 = forall_intro _j2
+    _j4 = implies_intro _j3
+    _j5 = forall_intro _j4
+    _ac2 = iff_elim_r _ra, _j5
+    _g = implies_intro _ac2
+    _r = iff_intro _f, _g
+    _o1 = implies_intro _r
+    _o2 = implies_intro _o1
+    _o3 = forall_intro _o2
+    _o4 = forall_intro _o3
+    _o5 = implies_intro _o4
+    _o6 = forall_intro _o5
+    _o7 = implies_intro _o6
+    _o8 = forall_intro _o7
+    qed _o8

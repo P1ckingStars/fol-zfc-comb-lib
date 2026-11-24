@@ -1,0 +1,4 @@
+shape: SET
+var: _u
+params: _P set, __ set
+formula: (elem(_u, _P) & (~ elem(_u, __)))

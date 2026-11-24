@@ -1,0 +1,74 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//build:fol.bzl", "fol_proof")
+load("//src/machines/class:defs.bzl", "class_claim", "fol_group")
+
+package(default_visibility = ["//visibility:public"])
+
+# The schemas a node's iff cites (DESIGN.md §10, decision 9), proved once.
+fol_proof(
+    name = "steps",
+    header = "steps.fol.def",
+    proof = "steps.fol.proof",
+    deps = ["//lib:base"],
+)
+
+# The foundation's predicates' rows (DESIGN.md §10, decisions 3 to 5), each made once by the machine from a ROW request,
+# after the rows its definition reads.
+ROWS = {
+    "upair": [],
+    "kpair": ["upair"],
+    "pmem": ["kpair"],
+    "index": [],
+    "tuple": [
+        "pmem",
+        "index",
+    ],
+    "ind": [],
+    # The tuple encoding's chains, as sys2fol's writer writes them: a numeral, a tuple's entry, a record.
+    "num1": [],
+    "num2": [],
+    "num3": [],
+    "num4": [],
+    "at0": ["pmem"],
+    "at1": ["pmem"],
+    "at2": ["pmem"],
+    "at3": ["pmem"],
+    "rec1": ["tuple"],
+    "rec2": ["tuple"],
+    "rec3": ["tuple"],
+}
+
+[
+    (
+        class_claim(
+            name = n + "_gen",
+            out_def = n + ".fol.def",
+            out_proof = n + ".fol.proof",
+            request = n + ".req",
+            rows = [":" + d for d in reads],
+            deps = [
+                "//lib:base",
+                ":steps",
+            ],
+        ),
+        fol_proof(
+            name = n,
+            header = n + ".fol.def",
+            proof = n + ".fol.proof",
+            deps = ["//lib:base", ":steps"] + [":" + d for d in reads],
+        ),
+    )
+    for n, reads in ROWS.items()
+]
+
+fol_group(
+    name = "rows",
+    deps = [":steps"] + [":" + n for n in ROWS],
+)
+
+cc_test(
+    name = "proved_test",
+    srcs = ["proved_test.cc"],
+    args = ["$(rootpath :%s)" % n for n in ROWS],
+    data = [":" + n for n in ROWS],
+)

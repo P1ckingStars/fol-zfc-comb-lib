@@ -23,6 +23,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":class",
+        "//src/machines/compress",
         "//src/parser",
         "//src/runtime",
     ],

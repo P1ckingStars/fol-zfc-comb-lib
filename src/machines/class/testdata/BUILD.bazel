@@ -16,7 +16,10 @@ load("//src/machines/class:defs.bzl", "class_claim")
             name = n,
             header = n + ".fol.def",
             proof = n + ".fol.proof",
-            deps = ["//lib:base"],
+            deps = [
+                "//lib:base",
+                "//src/machines/class/rows",
+            ],
         ),
     )
     for n in [
@@ -29,6 +32,12 @@ load("//src/machines/class:defs.bzl", "class_claim")
         "connectives",
         "snoc",
         "iff_false",
+        # A request's names are any the machine writes itself: the claim keeps them, and the machine's own avoid them.
+        "names_set",
+        "names_val",
+        "names_exact",
+        "names_class",
+        "underscore",
     ]
 ]
 

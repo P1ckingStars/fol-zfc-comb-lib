@@ -1,0 +1,4 @@
+shape: ROW
+var: u v
+params:
+formula: tuple(u, v)

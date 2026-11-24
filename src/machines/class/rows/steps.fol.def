@@ -1,0 +1,10 @@
+# The steps a class's iff takes at a node, each a schema proved once: a connective's iff from its children's, and a
+# quantifier's from its body's at every extension of the record.
+
+schema node_not [X(0), P(0), A(0)]: ((X <-> (~ P)) -> ((P <-> A) -> (X <-> (~ A))))
+schema node_and [X(0), P(0), Q(0), A(0), B(0)]: ((X <-> (P & Q)) -> ((P <-> A) -> ((Q <-> B) -> (X <-> (A & B)))))
+schema node_or [X(0), P(0), Q(0), A(0), B(0)]: ((X <-> (P | Q)) -> ((P <-> A) -> ((Q <-> B) -> (X <-> (A | B)))))
+schema node_imp [X(0), P(0), Q(0), A(0), B(0)]: ((X <-> (P -> Q)) -> ((P <-> A) -> ((Q <-> B) -> (X <-> (A -> B)))))
+schema node_iff [X(0), P(0), Q(0), A(0), B(0)]: ((X <-> (P <-> Q)) -> ((P <-> A) -> ((Q <-> B) -> (X <-> (A <-> B)))))
+schema node_ex [P(1)]: (forall a. (set(a) -> (forall k. (set(k) -> (forall D. (forall C. ((forall u. (set(u) -> (elem(u,C) <-> (exists v. (set(v) & (exists b. (set(b) & (snoc(u,k,v,b) & elem(b,D))))))))) -> ((forall v. (set(v) -> (forall b. (set(b) -> (snoc(a,k,v,b) -> (elem(b,D) <-> P(v))))))) -> (elem(a,C) <-> (exists v. (set(v) & P(v))))))))))))
+schema node_all [P(1)]: (forall a. (set(a) -> (forall k. (set(k) -> (forall D. (forall C. ((forall u. (set(u) -> (elem(u,C) <-> (forall v. (set(v) -> (forall b. (set(b) -> (snoc(u,k,v,b) -> elem(b,D))))))))) -> ((forall v. (set(v) -> (forall b. (set(b) -> (snoc(a,k,v,b) -> (elem(b,D) <-> P(v))))))) -> (elem(a,C) <-> (forall v. (set(v) -> P(v))))))))))))

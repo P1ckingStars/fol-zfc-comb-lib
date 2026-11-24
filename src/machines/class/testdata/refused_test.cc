@@ -8,7 +8,7 @@ namespace {
 bool refused(const cls::Ptr& f, std::vector<std::pair<std::string, bool>> params, const std::string& why) {
     cls::Request req{cls::Shape::Set, "x", std::move(params), f};
     try {
-        cls::construct(req, {});
+        cls::construct(req, {}, {});
     } catch (const cls::Refused& r) {
         if (std::string(r.what()).find(why) != std::string::npos) return true;
         std::cerr << "refused for another reason: " << r.what() << "\n";

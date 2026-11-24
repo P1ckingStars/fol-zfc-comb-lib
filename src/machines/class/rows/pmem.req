@@ -1,0 +1,4 @@
+shape: ROW
+var: u v w
+params:
+formula: pmem(u, v, w)
