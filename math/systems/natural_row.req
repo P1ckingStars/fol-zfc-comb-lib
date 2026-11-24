@@ -1,0 +1,4 @@
+shape: ROW
+var: u
+params:
+formula: Sys.natural(u)

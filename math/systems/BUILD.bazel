@@ -1,7 +1,8 @@
 load("//build:fol.bzl", "fol_proof")
 load("//src/machines/class:defs.bzl", "class_claim")
 
-package(default_visibility = ["//math:__subpackages__"])
+# Public: sys2fol's claims cite the systems library.
+package(default_visibility = ["//visibility:public"])
 
 fol_proof(
     name = "basic",
@@ -44,7 +45,10 @@ fol_proof(
     name = "related_reachable",
     header = "related_reachable.fol.def",
     proof = "related_reachable.fol.proof",
-    deps = [":reach"],
+    deps = [
+        ":reach",
+        "//src/machines/class/rows",
+    ],
 )
 
 fol_proof(
@@ -67,7 +71,29 @@ fol_proof(
     name = "natural_exact",
     header = "natural_exact.fol.def",
     proof = "natural_exact.fol.proof",
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
+)
+
+# Sys.natural's row, which ships with `natural`: the class machine reads Sys.natural through it.
+class_claim(
+    name = "natural_row_gen",
+    request = "natural_row.req",
     deps = [":basic"],
+    out_def = "natural_row.fol.def",
+    out_proof = "natural_row.fol.proof",
+)
+
+fol_proof(
+    name = "natural_row",
+    header = "natural_row.fol.def",
+    proof = "natural_row.fol.proof",
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
 )
 
 fol_proof(
@@ -76,6 +102,7 @@ fol_proof(
     proof = "natural.fol.proof",
     deps = [
         ":natural_exact",
+        ":natural_row",
         "@zf//:ZF.Nat",
     ],
 )
@@ -94,7 +121,10 @@ fol_proof(
     name = "trace_prefix",
     header = "trace_prefix.fol.def",
     proof = "trace_prefix.fol.proof",
-    deps = [":basic"],
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
 )
 
 fol_proof(
@@ -131,5 +161,8 @@ fol_proof(
     name = "trace_prefix_back",
     header = "trace_prefix_back.fol.def",
     proof = "trace_prefix_back.fol.proof",
-    deps = [":basic"],
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
 )
