@@ -31,5 +31,13 @@ int main() {
     ok &= refused(atom("elem", {"y", "x"}), {}, "free and no parameter");
     // A predicate with no @def.
     ok &= refused(atom("Unknown.p", {"x"}), {}, "no @def");
+    // A ROW request's parameter is held fixed at a set: a class parameter is refused.
+    try {
+        cls::construct(cls::Request{cls::Shape::Row, "u", {{"Q", false}}, atom("elem", {"u", "Q"}), {"u"}}, {}, {});
+        std::cerr << "not refused: a ROW request with a class parameter\n";
+        ok = false;
+    } catch (const cls::Refused& r) {
+        ok &= std::string(r.what()).find("is a class") != std::string::npos;
+    }
     return ok ? 0 : 1;
 }

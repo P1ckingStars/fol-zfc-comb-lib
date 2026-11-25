@@ -53,13 +53,13 @@ Every block of these outputs is rewritten and every report is Proved:
 
 | Proofs | Lines in → out | Bytes in → out |
 |---|---|---|
-| Class machine, 13 requests: sys2fol's 11, and `math/systems`' `natural_cases` and `rest_pairs` | 12,168 → 12,063 | 669 KB → 379 KB |
-| Class machine, its 17 rows | 15,753 → 15,542 | 589 KB → 321 KB |
-| sysprove, BoundedQueue's claims | 5,666 → 5,105 | 365 KB → 160 KB |
-| sysprove, BoundedQueue's step typing | 1,314 → 1,299 | 85 KB → 39 KB |
-| sysprove, Crossing's claims | 4,336 → 3,087 | 228 KB → 78 KB |
-| sysprove, Crossing's step typing | 954 → 576 | 56 KB → 18 KB |
-| sysprove, the two specs' 31 instances | 2,166 → 2,083 | 70 KB → 38 KB |
+| Class machine, 13 requests: sys2fol's 11, and `math/systems`' `natural_cases` and `rest_pairs` | 10,786 → 10,702 | 480 KB → 269 KB |
+| Class machine, its 11 rows | 11,266 → 11,115 | 418 KB → 227 KB |
+| sysprove, BoundedQueue's claims | 4,717 → 4,345 | 218 KB → 100 KB |
+| sysprove, BoundedQueue's step typing | 1,212 → 1,194 | 63 KB → 29 KB |
+| sysprove, Crossing's claims | 4,222 → 3,042 | 197 KB → 70 KB |
+| sysprove, Crossing's step typing | 831 → 501 | 39 KB → 12 KB |
+| sysprove, the two specs' 10 instances | 676 → 663 | 20 KB → 11 KB |
 | `math/systems`, its hand-written proofs | 4,939 → 4,743 | 162 KB → 89 KB |
 
 `math/systems`' `tuple_facts` and `natural_facts` are sysprove's proofs as this machine wrote them (sys2fol `DESIGN.md`,

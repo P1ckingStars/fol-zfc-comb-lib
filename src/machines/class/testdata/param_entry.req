@@ -1,0 +1,4 @@
+shape: SET
+var: x
+params: P set, Q set
+formula: ((eq(x, P) | elem(P, x)) & (exists y. (set(y) & (nsucc(P, y) & elem(y, Q)))))

@@ -1,0 +1,4 @@
+shape: ROW
+var: u
+params: z set
+formula: eq(u, z)

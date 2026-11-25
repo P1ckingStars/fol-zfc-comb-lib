@@ -1,0 +1,4 @@
+shape: ROW
+var: q x0 x1
+params:
+formula: Sys.tuple2(q, x0, x1)

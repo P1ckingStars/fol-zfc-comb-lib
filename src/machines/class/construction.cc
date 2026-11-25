@@ -174,17 +174,18 @@ struct RowEntry {
     Ptr psi;
     std::vector<std::string> places;
     std::string claim;
+    std::vector<std::string> params;
 };
 
-// A subformula over the variables in scope at it (FOUNDATION §3): the abstracted variable first, then each bound one.
-// A rowed node is read through its row at the variables rargs.
+// A subformula over the variables in scope at it (FOUNDATION §3): the parameters read at entries, the abstracted
+// variable, each bound one. A rowed node is read through its row at the variables rargs and the parameters rat.
 struct Tree {
     Ptr f;
     std::vector<std::string> scope;
     std::vector<Tree> kids;
     bool rowed = false;
     const RowEntry* row = nullptr;
-    std::vector<std::string> rargs;
+    std::vector<std::string> rargs, rat;
 };
 
 std::set<std::string> free_vars(const Ptr& f) {
@@ -296,10 +297,11 @@ public:
         : defs_(defs) {
         for (const auto& [n, s] : params) {
             params_[n] = s;
+            order_params_.push_back(n);
             reserved_.insert(n);
         }
         for (const auto& r : rows) try {
-                add_entry(guard(r.psi), r.places, r.claim);
+                add_entry(guard(r.psi), r.places, r.claim, r.params);
             } catch (const Refused&) {
             }
     }
@@ -313,8 +315,9 @@ public:
         if (auto r = row_for(f, scope)) {
             Tree t{f, scope, {}};
             t.rowed = true;
-            t.row = r->first;
-            t.rargs = r->second;
+            t.row = r->e;
+            t.rargs = r->args;
+            t.rat = r->at;
             return t;
         }
         switch (f->k) {
@@ -323,8 +326,10 @@ public:
                     const auto& a = f->args[i];
                     if (in_scope(a)) continue;
                     if (!params_.count(a)) throw Refused("the variable " + a + " is free and no parameter");
-                    if (!(f->name == "elem" && i == 1))
+                    if (f->name == "elem" && i == 1) continue;
+                    if (!params_.at(a) || !collect_)
                         throw Refused("the parameter " + a + " outside a membership's right side in " + print(f));
+                    need_.insert(a);
                 }
                 return {f, scope, {}};
             }
@@ -365,10 +370,11 @@ public:
         for (const auto& v : req.vars) reserved_.insert(v);
         if (req.shape == Shape::Row) return run_row(req);
         Ptr phi = rename(guard(req.formula), {}, bound_);
+        entries(phi, {req.var});
         plan(phi);
         plan_deep(phi, req.var);
         make_trees();
-        Tree tree = build(phi, {req.var});
+        Tree tree = build(phi, at_scope(req.var));
         size_t dmax = depth(tree);
         for (const auto& rt : rowtrees_) dmax = std::max(dmax, depth(rt.tree));
         auto phi_at = [&](const std::string& v) { return print(subst(phi, {{req.var, v}})); };
@@ -411,7 +417,7 @@ public:
 
         for (const auto& [n, s] : req.params) {
             p_.fix(n);
-            if (s) p_.assume("set(" + n + ")");
+            if (s) set_of_[n] = p_.assume("set(" + n + ")");
         }
         N_ = {nm("N0")};
         std::string zz;
@@ -440,9 +446,14 @@ public:
         zdef_ = p_.iel(p_.ch(p_.use("zero_def"), {N_[0]}), zz);
         snoc_facts_ = p_.use("snoc_facts");
         snoc_ex_ = p_.use("snoc_EX");
+        if (!entry_.empty()) ctx();
         make_rows();
         auto top = gen(tree);
         std::string Cphi = top.first, exphi = top.second;
+        if (!entry_.empty() && (req.shape == Shape::Exact || req.shape == Shape::Class)) {
+            auto [K, kb] = val_class(phi, req.var, Cphi, exphi, nm("qv"), eigen_(), eigen_(), nm("K"), true);
+            std::tie(Cphi, exphi) = at_first(K, kb, phi_at);
+        }
         std::string N0 = N_[0], N1 = N_[1], sN0 = sN_[0], sN1 = sN_[1], ns0 = ns_[0];
         std::string tz = this->tz();
 
@@ -524,6 +535,7 @@ private:
         Ptr phi;
         Tree tree;
         const Tree* pnode = nullptr;
+        bool ctx = false;
     };
 
     std::deque<RowEntry> entries_;
@@ -533,39 +545,121 @@ private:
     std::set<const Node*> skip_;
     std::vector<const RowEntry*> order_;
     std::deque<RowTree> rowtrees_;
-    std::map<const RowEntry*, std::pair<std::string, std::string>> local_, loaded_;
+    std::map<const RowEntry*, std::pair<std::string, std::string>> local_;
+    std::map<std::pair<const RowEntry*, std::vector<std::string>>, std::pair<std::string, std::string>> loaded_;
     std::map<const Tree*, std::pair<std::string, std::string>> made_;
     std::string tz_;
 
-    const RowEntry* add_entry(Ptr psi, std::vector<std::string> places, std::string claim) {
-        entries_.push_back(RowEntry{std::move(psi), std::move(places), std::move(claim)});
+    const RowEntry* add_entry(Ptr psi, std::vector<std::string> places, std::string claim,
+                              std::vector<std::string> params = {}) {
+        entries_.push_back(RowEntry{std::move(psi), std::move(places), std::move(claim), std::move(params)});
         const RowEntry* e = &entries_.back();
         by_skel_.emplace(skeleton(e->psi), e);
-        if (e->psi->k == K::Pred && e->psi->args == e->places) pred_rowed_.insert(e->psi->name);
+        if (e->psi->k == K::Pred && e->params.empty() && e->psi->args == e->places) pred_rowed_.insert(e->psi->name);
         return e;
     }
 
+    bool set_param(const std::string& v) const {
+        auto it = params_.find(v);
+        return it != params_.end() && it->second;
+    }
+
+    bool reads_param(const Ptr& f) const {
+        for (size_t i = 0; i < f->args.size(); ++i)
+            if (set_param(f->args[i]) && !(f->name == "elem" && i == 1)) return true;
+        return false;
+    }
+
     // The row f is read through at this scope: one whose formula f is an instance of, each place a variable in scope.
-    using RowAt = std::pair<const RowEntry*, std::vector<std::string>>;
+    struct RowAt {
+        const RowEntry* e;
+        std::vector<std::string> args, at;
+    };
     std::optional<RowAt> row_for(const Ptr& f, const std::vector<std::string>& scope) const {
-        if (f->k == K::Atom || f->k == K::False || skip_.count(f.get())) return {};
+        if (f->k == K::False || skip_.count(f.get())) return {};
+        if (f->k == K::Atom && !reads_param(f)) return {};
+        std::optional<RowAt> best;
         auto range = by_skel_.equal_range(skeleton(f));
         for (auto it = range.first; it != range.second; ++it) {
             const RowEntry* e = it->second;
+            if (f->k == K::Atom && e->params.empty()) continue;
             if (building_.count(e) || e->places.empty() || e->places.size() > 4) continue;
             if (building_trees_ && e->claim.empty() && !available_.count(e)) continue;
-            std::set<std::string> places(e->places.begin(), e->places.end());
+            if (best && best->e->places.size() <= e->places.size()) continue;
+            std::set<std::string> holes(e->places.begin(), e->places.end());
+            holes.insert(e->params.begin(), e->params.end());
             std::map<std::string, std::string> bind, pair;
-            if (!unify(e->psi, f, places, bind, pair)) continue;
-            std::vector<std::string> args;
+            if (!unify(e->psi, f, holes, bind, pair)) continue;
+            RowAt r{e, {}, {}};
             for (const auto& pl : e->places) {
                 auto b = bind.find(pl);
                 if (b == bind.end() || std::find(scope.begin(), scope.end(), b->second) == scope.end()) break;
-                args.push_back(b->second);
+                r.args.push_back(b->second);
             }
-            if (args.size() == e->places.size()) return std::make_pair(e, args);
+            for (const auto& pa : e->params) {
+                auto b = bind.find(pa);
+                if (b == bind.end() || !set_param(b->second) ||
+                    std::find(scope.begin(), scope.end(), b->second) != scope.end())
+                    break;
+                r.at.push_back(b->second);
+            }
+            if (r.args.size() == e->places.size() && r.at.size() == e->params.size()) best = r;
         }
-        return {};
+        return best;
+    }
+
+    // ---- set parameters at entries (DESIGN.md §3, §10 decision 10) ----
+
+    bool collect_ = false;
+    std::set<std::string> need_;
+    std::vector<std::string> order_params_, entry_;
+    std::map<std::string, std::string> set_of_;
+
+    // The set parameters f reads at an entry, in the request's order: a dry build, its fresh names given back.
+    void entries(const Ptr& f, const std::vector<std::string>& scope) {
+        Fresh saved = bound_;
+        collect_ = true;
+        build(f, scope);
+        collect_ = false;
+        bound_ = saved;
+        for (const auto& n : order_params_)
+            if (need_.count(n)) entry_.push_back(n);
+    }
+
+    std::vector<std::string> at_scope(const std::string& v) const {
+        std::vector<std::string> s = entry_;
+        s.push_back(v);
+        return s;
+    }
+
+    // The record of the parameters read at entries, made at the proof's top; with none, the empty tuple.
+    Record ctx_;
+    bool has_ctx_ = false;
+    const Record& ctx() {
+        if (has_ctx_) return ctx_;
+        std::vector<std::string> sets;
+        for (const auto& n : entry_) sets.push_back(set_of_.at(n));
+        ctx_ = entry_.empty() ? Record{N_[0], sN_[0], tz(), {}, 0} : make_record(entry_, sets, false);
+        has_ctx_ = true;
+        return ctx_;
+    }
+
+    // The scope variables a node reads at entries: a row's places, an atom's arguments, its children's.
+    std::map<const Tree*, std::set<std::string>> reads_;
+    const std::set<std::string>& reads(const Tree& t) {
+        if (auto it = reads_.find(&t); it != reads_.end()) return it->second;
+        std::set<std::string> in(t.scope.begin(), t.scope.end()), r;
+        if (t.rowed) {
+            r.insert(t.rargs.begin(), t.rargs.end());
+        } else if (t.f->k == K::Atom) {
+            for (const auto& a : t.f->args)
+                if (in.count(a)) r.insert(a);
+        } else {
+            for (const auto& c : t.kids)
+                for (const auto& v : reads(c))
+                    if (in.count(v)) r.insert(v);
+        }
+        return reads_[&t] = r;
     }
 
     // The rows to make here, after those their definitions read: each defined predicate of 1 to 4 places with none.
@@ -623,7 +717,9 @@ private:
             rt.phi = quant(K::Ex, q, quant(K::Ex, x, binary(K::And, atom("kpair", {q, x, rt.z}), mid)));
         }
         building_.insert(e);
-        rt.tree = build(rt.phi, {rt.z});
+        std::set<std::string> fv = free_vars(psi);
+        for (const auto& v : entry_) rt.ctx = rt.ctx || fv.count(v) > 0;
+        rt.tree = build(rt.phi, rt.ctx ? at_scope(rt.z) : std::vector<std::string>{rt.z});
         building_.erase(e);
         rowtrees_.push_back(std::move(rt));
         RowTree& back = rowtrees_.back();
@@ -767,7 +863,7 @@ private:
         std::vector<Made> made;
         for (int round = 0; round < 256; ++round) {
             std::map<std::string, std::vector<Occ>> groups;
-            std::vector<std::string> scope = {var};
+            std::vector<std::string> scope = at_scope(var);
             occurrences(phi, scope, groups);
             for (auto& m : made) {
                 const Ptr& psi = m.e->psi;
@@ -823,12 +919,15 @@ private:
     }
 
     // A row's class and iff: a loaded one opened once, or the one made here.
-    std::pair<std::string, std::string> row_of(const RowEntry* e) {
+    std::pair<std::string, std::string> row_of(const RowEntry* e, const std::vector<std::string>& at = {}) {
         if (auto l = local_.find(e); l != local_.end()) return l->second;
-        if (auto l = loaded_.find(e); l != loaded_.end()) return l->second;
+        auto key = std::make_pair(e, at);
+        if (auto l = loaded_.find(key); l != loaded_.end()) return l->second;
+        std::vector<std::string> args;
+        for (const auto& p : at) args.insert(args.end(), {p, set_of_.at(p)});
         std::string w = rowk_();
-        std::string h = p_.ee(p_.use(e->claim), w);
-        return loaded_[e] = {w, h};
+        std::string h = p_.ee(p_.ch(p_.use(e->claim), args), w);
+        return loaded_[key] = {w, h};
     }
 
     std::string at_places(const RowEntry* e, const std::vector<std::string>& args) {
@@ -837,33 +936,52 @@ private:
         return print(rename(e->psi, m, bound_));
     }
 
-    // phi's class at the 1-records made a class of sets by member_class: K with forall w. (w in K <-> phi(w)).
+    // phi's class made a class of sets by member_class at the parameters' record: K with forall w. (w in K <-> phi(w)).
     std::pair<std::string, std::string> val_class(const Ptr& phi, const std::string& var, const std::string& Cphi,
                                                   const std::string& exphi, const std::string& qv,
                                                   const std::string& et0, const std::string& ea1,
-                                                  const std::string& Kc) {
+                                                  const std::string& Kc, bool ctx = true) {
         auto at = [&](const std::string& v) { return print(subst(phi, {{var, v}})); };
         std::string mc = p_.line("schema_inst member_class { Q: \\" + qv + ". " + at(qv) + " }");
+        size_t m = ctx ? entry_.size() : 0;
+        const Record& c = m ? this->ctx() : Record{N_[0], sN_[0], "", {}, 0};
         p_.fix(et0);
         std::string st = p_.assume("set(" + et0 + ")");
         p_.fix(ea1);
         std::string sa1 = p_.assume("set(" + ea1 + ")");
-        std::string sn = p_.assume("snoc(" + N_[0] + ", " + N_[0] + ", " + et0 + ", " + ea1 + ")");
-        std::string sf = p_.ch(snoc_facts_, {N_[0], sN_[0], N_[1], sN_[1], ns_[0], N_[0], et0, st, ea1, tz(), sn});
-        std::string ex1 = p_.ch(exphi, {ea1, sa1, p_.al(sf), et0, st, p_.al(p_.ar(sf))});
+        std::string sn = p_.assume("snoc(" + c.r + ", " + N_[m] + ", " + et0 + ", " + ea1 + ")");
+        std::string sf = p_.ch(snoc_facts_, {N_[m], sN_[m], N_[m + 1], sN_[m + 1], ns_[m], c.r, et0, st, ea1,
+                                             m ? c.tr : tz(), sn});
+        std::vector<std::string> args = {ea1, sa1, p_.al(sf)};
+        for (size_t i = 0; i < m; ++i)
+            args.insert(args.end(), {entry_[i], set_of_.at(entry_[i]), p_.ch(p_.ar(p_.ar(sf)), {N_[i], entry_[i], c.pm[i]})});
+        args.insert(args.end(), {et0, st, p_.al(p_.ar(sf))});
+        std::string ex1 = p_.ch(exphi, args);
         std::string prem = p_.fi(p_.ii(p_.fi(p_.ii(p_.ii(ex1)))));
-        return {Kc, p_.ee(p_.ch(mc, {N_[0], sN_[0], Cphi, N_[0], sN_[0], prem}), Kc)};
+        return {Kc, p_.ee(p_.ch(mc, {N_[m], sN_[m], Cphi, c.r, c.sr, prem}), Kc)};
     }
 
-    Record make_record(const std::vector<std::string>& ys, const std::vector<std::string>& sy) {
+    // A class of sets read at a record's first entry by read1: C and its iff at the 1-records.
+    std::pair<std::string, std::string> at_first(const std::string& K, const std::string& kb,
+                                                 const std::function<std::string(const std::string&)>& at) {
+        std::string C = cls_();
+        std::string cb = p_.ee(p_.ch(p_.use("read1"), {N_[0], sN_[0], K}), C);
+        std::string ex = ex_lemma(1, [&](const Rec& R) {
+            return trans(p_.ch(cb, {R.r, R.sr, N_[1], R.tr, R.ys[0], R.sy[0], R.pmem(0)}),
+                         p_.ch(kb, {R.ys[0], R.sy[0]}), elem(R.r, C), elem(R.ys[0], K), at(R.ys[0]));
+        });
+        return {C, ex};
+    }
+
+    Record make_record(const std::vector<std::string>& ys, const std::vector<std::string>& sy, bool keep = true) {
         Record R;
         R.r = N_[0];
         R.sr = sN_[0];
         R.tr = tz();
         for (size_t i = 0; i < ys.size(); ++i) {
             std::string b = eigen_();
-            std::string e = p_.ee(p_.ch(snoc_ex_, {R.r, R.sr, N_[i], sN_[i], ys[i], sy[i]}), b, true);
-            ++R.scopes;
+            std::string e = p_.ee(p_.ch(snoc_ex_, {R.r, R.sr, N_[i], sN_[i], ys[i], sy[i]}), b, keep);
+            if (keep) ++R.scopes;
             std::string sb = p_.al(e), sn = p_.ar(e);
             std::string sf =
                 p_.ch(snoc_facts_, {N_[i], sN_[i], N_[i + 1], sN_[i + 1], ns_[i], R.r, ys[i], sy[i], b, R.tr, sn});
@@ -892,6 +1010,10 @@ private:
                     break;
                 }
         std::vector<std::string> ys(m, N_[0]), sy(m, sN_[0]);
+        for (size_t i = 0; rt.ctx && i < entry_.size(); ++i) {
+            ys[i] = entry_[i];
+            sy[i] = set_of_.at(entry_[i]);
+        }
         for (size_t i = 0; i < pos.size(); ++i) {
             ys[pos[i]] = to[i];
             sy[pos[i]] = sto[i];
@@ -918,7 +1040,7 @@ private:
     // P's row, proved here: phi's class a class of sets by member_class, then the iff the reading rows take.
     std::pair<std::string, std::string> prove_row(const RowTree& rt) {
         auto [Cphi, exphi] = gen(rt.tree);
-        auto [K, kb] = val_class(rt.phi, rt.z, Cphi, exphi, nm("qv"), eigen_(), eigen_(), rowk_());
+        auto [K, kb] = val_class(rt.phi, rt.z, Cphi, exphi, nm("qv"), eigen_(), eigen_(), rowk_(), rt.ctx);
         if (rt.n == 1) return {K, kb};
         if (rt.n == 2) {
             std::string u = eigen_(), v = eigen_();
@@ -1025,13 +1147,20 @@ private:
     // A ROW request: its formula's row, the rows its predicates need made first, in the same proof.
     Output run_row(const Request& req) {
         size_t n = req.vars.size();
-        if (!req.params.empty() || n < 1 || n > 4)
-            throw Refused("a ROW request has one to four places and no parameters");
+        if (n < 1 || n > 4) throw Refused("a ROW request has one to four places");
+        std::vector<std::string> ps;
+        for (const auto& [p, s] : req.params) {
+            if (!s) throw Refused("the parameter " + p + " of a ROW request is a class");
+            ps.push_back(p);
+        }
         Ptr psi = rename(guard(req.formula), {}, bound_);
         std::set<std::string> fv = free_vars(psi);
         for (const auto& v : req.vars)
             if (!fv.count(v)) throw Refused("the place " + v + " is not in the formula");
-        if (fv.size() != n) throw Refused("a free variable of the formula is no place");
+        for (const auto& p : ps)
+            if (!fv.count(p)) throw Refused("the parameter " + p + " is not in the formula");
+        if (fv.size() != n + ps.size()) throw Refused("a free variable of the formula is no place");
+        entries(psi, req.vars);
         const RowEntry* e = add_entry(psi, req.vars, "");
         building_.insert(e);
         if (psi->k == K::Pred && defs_.count(psi->name)) {
@@ -1045,6 +1174,10 @@ private:
         row_tree(e);
         size_t dmax = 1;
         for (const auto& rt : rowtrees_) dmax = std::max(dmax, depth(rt.tree));
+        for (const auto& p : ps) {
+            p_.fix(p);
+            set_of_[p] = p_.assume("set(" + p + ")");
+        }
         N_ = {nm("N0")};
         std::string e0 = p_.ee(p_.use("zero_EX"), N_[0]);
         sN_.push_back(p_.al(e0));
@@ -1061,13 +1194,15 @@ private:
         zdef_ = p_.iel(p_.ch(p_.use("zero_def"), {N_[0]}), zz);
         snoc_facts_ = p_.use("snoc_facts");
         snoc_ex_ = p_.use("snoc_EX");
+        if (!entry_.empty()) ctx();
         make_rows();
         auto [K, wb] = local_.at(e);
         Output out;
-        out.statement = row_statement(psi, req.vars);
+        out.statement = row_statement(psi, req.vars, ps);
         out.name = "Cls.ROW_" + sha256_hex(out.statement).substr(0, 16);
         std::string h = p_.ei(wb, K);
         for (int i = 0; i < p_.opened; ++i) h = p_.ei(h);
+        for (size_t i = ps.size(); i-- > 0;) h = p_.fi(p_.ii(h));
         p_.raw("qed " + h);
         out.proof = "proof " + out.name + ":\n" + p_.text();
         return out;
@@ -1172,7 +1307,7 @@ private:
         const auto& sN = sN_;
         NodeCls n;
         if (t.rowed) {
-            const auto rw = row_of(t.row);
+            const auto rw = row_of(t.row, t.rat);
             n.wb = rw.second;
             n.W = rw.first;
             for (const auto& a : t.rargs) n.ix.push_back(idx.at(a));
@@ -1189,7 +1324,7 @@ private:
                 n.ix = {idx.at(f->args[0])};
                 n.C = cls_();
                 n.cb = p_.ee(p_.ch(p_.use("B3"), {N[0]}), n.C);
-            } else if (n.op == "elem" && params_.count(f->args[1])) {
+            } else if (n.op == "elem" && params_.count(f->args[1]) && !idx.count(f->args[1])) {
                 n.op = "elem of a parameter";
                 n.ix = {idx.at(f->args[0])};
                 n.C = cls_();
@@ -1366,7 +1501,7 @@ private:
             B.tr = p_.al(sf);
             std::string pv = p_.al(p_.ar(sf)), keep = p_.ar(p_.ar(sf));
             bool all = has_forced(bt);
-            std::set<std::string> used = free_vars(bt.f);
+            const std::set<std::string>& used = reads(bt);
             for (size_t i = 0; i < k; ++i) {
                 B.ys.push_back(R.ys[i]);
                 B.sy.push_back(R.sy[i]);
@@ -1401,7 +1536,8 @@ Ptr some_of(const std::string& v, Ptr body) {
 
 }  // namespace
 
-std::string row_statement(const Ptr& psi, const std::vector<std::string>& places) {
+std::string row_statement(const Ptr& psi, const std::vector<std::string>& places,
+                          const std::vector<std::string>& params) {
     std::set<std::string> taken(places.begin(), places.end());
     std::function<void(const Ptr&)> names = [&](const Ptr& g) {
         if (!g) return;
@@ -1433,10 +1569,20 @@ std::string row_statement(const Ptr& psi, const std::vector<std::string>& places
     }
     std::string body = "(" + L + " <-> " + print(psi) + ")";
     for (size_t i = vs.size(); i-- > 0;) body = "(forall " + vs[i] + ". (set(" + vs[i] + ") -> " + body + "))";
-    return "(exists " + W + ". " + body + ")";
+    body = "(exists " + W + ". " + body + ")";
+    for (size_t i = params.size(); i-- > 0;)
+        body = "(forall " + params[i] + ". (set(" + params[i] + ") -> " + body + "))";
+    return body;
 }
 
-std::optional<Row> as_row(const Ptr& f) {
+std::optional<Row> as_row(const Ptr& f0) {
+    std::vector<std::string> params;
+    Ptr f = f0;
+    while (f->k == K::Forall && f->a && f->a->k == K::Imp && f->a->a->k == K::Atom && f->a->a->name == "set" &&
+           f->a->a->args == std::vector<std::string>{f->name}) {
+        params.push_back(f->name);
+        f = f->a->b;
+    }
     if (f->k != K::Exists) return {};
     const std::string W = f->name;
     Ptr g = f->a;
@@ -1452,8 +1598,12 @@ std::optional<Row> as_row(const Ptr& f) {
     std::vector<std::string> places = vs;
     if (vs.size() == 4 && !fv.count(vs[3])) places.pop_back();
     for (const auto& v : fv)
-        if (std::find(places.begin(), places.end(), v) == places.end()) return {};
+        if (std::find(places.begin(), places.end(), v) == places.end() &&
+            std::find(params.begin(), params.end(), v) == params.end())
+            return {};
     for (const auto& v : places)
+        if (!fv.count(v)) return {};
+    for (const auto& v : params)
         if (!fv.count(v)) return {};
     Ptr want;
     if (vs.size() == 1) want = atom("elem", {vs[0], W});
@@ -1464,7 +1614,7 @@ std::optional<Row> as_row(const Ptr& f) {
                                                          atom("pmem", {"_q", vs[3], W})))));
     Fresh f1("c"), f2("c");
     if (print(rename(L, {}, f1)) != print(rename(want, {}, f2))) return {};
-    return Row{"", psi, places};
+    return Row{"", psi, places, params};
 }
 
 }  // namespace cls

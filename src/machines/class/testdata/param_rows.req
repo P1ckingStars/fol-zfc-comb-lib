@@ -1,0 +1,4 @@
+shape: CLASS
+var: x
+params: n0 set, n1 set, n2 set
+formula: (tuple(x, n2) & (pmem(n0, n1, x) & (exists y. (set(y) & (pmem(n1, y, x) & eq(y, n0))))))

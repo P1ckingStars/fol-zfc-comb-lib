@@ -1,0 +1,4 @@
+shape: VAL
+var: x
+params: P set
+formula: nsucc(P, x)

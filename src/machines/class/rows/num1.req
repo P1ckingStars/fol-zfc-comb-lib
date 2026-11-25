@@ -1,4 +1,0 @@
-shape: ROW
-var: u
-params:
-formula: (forall z0. (set(z0) -> (zero(z0) -> nsucc(z0, u))))

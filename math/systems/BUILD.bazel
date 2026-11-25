@@ -31,12 +31,34 @@ fol_proof(
     ],
 )
 
+# Sys.tuple2's row, which ships with `basic`: the class machine reads Sys.tuple2 through it.
+class_claim(
+    name = "tuple2_row_gen",
+    request = "tuple2_row.req",
+    deps = [":basic"],
+    out_def = "tuple2_row.fol.def",
+    out_proof = "tuple2_row.fol.proof",
+)
+
+fol_proof(
+    name = "tuple2_row",
+    header = "tuple2_row.fol.def",
+    proof = "tuple2_row.fol.proof",
+    deps = [
+        ":basic",
+        "//src/machines/class/rows",
+    ],
+)
+
 # The class machine's claims the systems library cites. related_reachable: the states related by R to a reachable
 # state of a system, as a set inside any set (step 4's J).
 class_claim(
     name = "related_reachable_gen",
     request = "related_reachable.req",
-    deps = [":reach"],
+    deps = [
+        ":reach",
+        ":tuple2_row",
+    ],
     out_def = "related_reachable.fol.def",
     out_proof = "related_reachable.fol.proof",
 )
@@ -47,6 +69,7 @@ fol_proof(
     proof = "related_reachable.fol.proof",
     deps = [
         ":reach",
+        ":tuple2_row",
         "//src/machines/class/rows",
     ],
 )
@@ -158,7 +181,10 @@ fol_proof(
 class_claim(
     name = "trace_prefix_gen",
     request = "trace_prefix.req",
-    deps = [":basic"],
+    deps = [
+        ":basic",
+        ":tuple2_row",
+    ],
     out_def = "trace_prefix.fol.def",
     out_proof = "trace_prefix.fol.proof",
 )
@@ -169,6 +195,7 @@ fol_proof(
     proof = "trace_prefix.fol.proof",
     deps = [
         ":basic",
+        ":tuple2_row",
         "//src/machines/class/rows",
     ],
 )
@@ -198,7 +225,10 @@ fol_proof(
 class_claim(
     name = "trace_prefix_back_gen",
     request = "trace_prefix_back.req",
-    deps = [":basic"],
+    deps = [
+        ":basic",
+        ":tuple2_row",
+    ],
     out_def = "trace_prefix_back.fol.def",
     out_proof = "trace_prefix_back.fol.proof",
 )
@@ -209,6 +239,7 @@ fol_proof(
     proof = "trace_prefix_back.fol.proof",
     deps = [
         ":basic",
+        ":tuple2_row",
         "//src/machines/class/rows",
     ],
 )

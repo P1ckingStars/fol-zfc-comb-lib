@@ -25,6 +25,7 @@ struct Row {
     std::string claim;
     Ptr psi;
     std::vector<std::string> places;
+    std::vector<std::string> params;
 };
 
 struct Request {
@@ -45,7 +46,8 @@ struct Output {
 Output construct(const Request& req, const std::map<std::string, Def>& defs, const std::vector<Row>& rows);
 
 // The row of psi over its places, 1 to 4 of them, in the form read1, read2 or read4 reads.
-std::string row_statement(const Ptr& psi, const std::vector<std::string>& places);
+std::string row_statement(const Ptr& psi, const std::vector<std::string>& places,
+                          const std::vector<std::string>& params = {});
 
 // The row f states, if it states one; its claim left for the caller.
 std::optional<Row> as_row(const Ptr& f);

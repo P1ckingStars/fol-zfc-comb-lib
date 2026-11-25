@@ -24,18 +24,12 @@ ROWS = {
         "index",
     ],
     "ind": [],
-    # The tuple encoding's chains, as sys2fol's writer writes them: a numeral, a tuple's entry, a record.
-    "num1": [],
-    "num2": [],
-    "num3": [],
-    "num4": [],
-    "at0": ["pmem"],
-    "at1": ["pmem"],
-    "at2": ["pmem"],
-    "at3": ["pmem"],
-    "rec1": ["tuple"],
-    "rec2": ["tuple"],
-    "rec3": ["tuple"],
+    # The tuple encoding at numbers given as parameters (DESIGN.md §10, decision 10).
+    "equal": [],
+    "fixed_entry": ["pmem"],
+    "record1": ["tuple"],
+    "record2": ["tuple"],
+    "record3": ["tuple"],
 }
 
 [

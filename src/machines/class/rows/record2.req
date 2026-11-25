@@ -1,0 +1,4 @@
+shape: ROW
+var: r x0 x1
+params: z0 set, z1 set, z2 set
+formula: (tuple(r, z2) & (pmem(z0, x0, r) & pmem(z1, x1, r)))

@@ -27,7 +27,7 @@ Isabelle terms (`Sources/Lowering/Classes.swift`); the machine writes them for e
 - p⃗, φ's other free variables, the parameters: each a set (under `set(p)`) or a class.
 - The loaded library parts, for the constants and `@def`s φ mentions and the rows it is read through.
 
-A ROW request is φ over its places x⃗, one to four of them, with no parameters: it asks for φ's row (§4).
+A ROW request is φ over its places x⃗, one to four of them, its parameters sets: it asks for φ's row (§4).
 
 ## 3. The construction
 
@@ -41,6 +41,7 @@ largest index. An atom is read as membership of its entries in its witness class
 | `elem(x, y)` | B1's `E` | `read2` |
 | `eq(x, y)` | `cls_diag` | `read2` |
 | `elem(x, Y)`, Y a parameter | Y | `read1` |
+| a set parameter in any other place, read through no row | | an entry, before x⃗ (below) |
 | `zero(x)`, `nsucc(n, m)`, `snoc(t, n, v, s)` | `cls_zero`, `cls_nsucc`, `cls_snoc4` | `read1`, `read2`, `read4` |
 | a library constant applied, `c(x⃗, y)` | c's class | the argument tuple read by `TUPLE_ROW_n` |
 | a subformula that is an instance of a loaded row's formula | the row's class | `read1`, `read2` or `read4` at its places' entries |
@@ -51,11 +52,22 @@ largest index. An atom is read as membership of its entries in its witness class
 | `∃v. set(v) ∧ φ`, `∀v. set(v) → φ` | | `row_ex`, `row_all` |
 | the domain | | `tuples_class`, intersected once at the top |
 
+A set parameter read through no row and in a place no membership's right side is an entry, as isa2fol's comprehension
+reads its context (`Sources/Lowering/Comprehension.swift`, `context` and `section`): the parameters read so are the
+first entries of every record, in the request's order, before x⃗ and the bound variables. The class built is of those
+records; the class of values requested is cut from it by base's `member_class` at the record of the parameters'
+values, made once at the proof's top, and CLASS and EXACT read that class at their one entry by `read1`.
+
 Refused at the gate: a quantifier without its `set` guard (it ranges over classes, and class existence holds only for
 formulas quantifying over sets); a class parameter anywhere but a membership's right side; a `@def` that reaches itself.
 
 `TUPLE_ROW_n` is in the pinned unit (`IFOL`) for the arities isa2fol needed; the machine cites it there and writes its
 own for any other arity.
+
+A row may hold set parameters fixed, quantified in its claim before `∃W` (§4): a subformula is read through it when it
+is an instance of the row's formula with the row's places at variables in scope and its parameters at the request's
+set parameters, and the row is opened once at the proof's top at those. Of the rows a subformula is an instance of,
+the one with the fewest places is read.
 
 A row is found among the loaded claims by its statement (§4), whatever its name: the machine's own rows (`rows/`), a
 library's, and any claim of the form, as `cls_zero` and `g5_rot` are. A row made in the proof is made once, before the
@@ -118,6 +130,9 @@ with no injectivity of tuples and no congruence of φ.
 ∃W. ∀u v w x. set(u) → … → ((∃p q. kpair(v, w, p) ∧ kpair(p, u, q) ∧ pmem(q, x, W)) ↔ φ(u, v, w[, x]))
 ```
 
+A row with parameters p⃗ is the same claim under `∀p⃗. set(p⃗) →`, as base's `row_app` (an entry at a position) and
+`tuples_class` (a tuple's length) are.
+
 Its proof: φ's tuples as pairs, a VAL class by `member_class`, and the iff, carried between equal places by φ's class
 at a record that holds them, `g2_pmem_cong` moving each entry.
 
@@ -165,10 +180,10 @@ A formula outside the gate (§3) is refused with its reason: no claim and no pro
 ## 6. Cost
 
 isa2fol's class proofs: 3,502 in the pinned unit, 500–1,500 lines each for the small formulas of `ZF.Fixedpt`. A node
-costs a constant; a quantifier, besides, three steps for each entry its body reads. sys2fol's 11 requests: 11,357 lines
-and 365 KB once compressed, the largest, a step relation's, 5,618; the machine's 17 rows, made once, 15,542.
-`proof_checker` checks the step relation's in 1.9 seconds, nearly all of it loading the libraries: a 300-line set takes
-as long.
+costs a constant; a quantifier, besides, three steps for each entry its body reads. sys2fol's 11 requests, each number a
+parameter: 9,996 lines and 256 KB once compressed, the largest, a step relation's, 4,637; the machine's 11 rows, made
+once, 11,115. `proof_checker` checks the step relation's in 1.8 seconds, nearly all of it loading the libraries: a
+300-line set takes as long.
 
 ## 7. First milestone
 
@@ -182,7 +197,7 @@ Both checked: `testdata:m1` with `testdata:m1_check`, and `//math/systems:relate
 about 570 subformulas and whose proof, 5,547 lines, checks in seconds. `testdata` also checks every shape but GRAPH,
 both kinds of parameter, every connective, and the gate's refusals. The swap example's invariant and an rtl2fol latch
 equation's induction predicate come with Part B and rtl2fol; GRAPH with the first use of a bridge on given systems. Not yet built, and refused for now: a
-set parameter outside a membership's right side, and a library constant's atom.
+library constant's atom.
 
 ## 8. To read before building
 
@@ -206,36 +221,7 @@ the machine.
 | 4 | A row is found among the loaded claims by its statement, whatever its name, and named by its statement's hash, `Cls.ROW_…`, like every claim the machine writes (the user, 2026-11-23) | No names to keep; a row proved another way is found too; it is checked like any claim, so how it was proved does not matter. |
 | 5 | The rows of the foundation's predicates live in the machine's package and are loaded for every request; a library's rows ship with that library's definitions (the user, 2026-11-23) | No client lists rows, so none is forgotten; the foundation is not edited. |
 | 6 | A formula's stretches between quantifiers are each proved in one scope: every node's class is made first, at the proof's top; then each stretch's iffs are proved for one record of its length, its quantifiers' bodies proved before it as stretches of their own and cited at the records the quantifiers extend (agreed by the user, 2026-11-23) | Two thirds of the machine's lines re-introduced a record's variables at every node and cited each child's lemma at them; one scope per stretch leaves that only to the quantifiers, an estimated 1.8× fewer lines. |
-| 7 | A row reads any formula, not only a defined predicate: its claim states the reading form at its places ↔ a formula ψ of them, and the machine reads any subformula that is an instance of a loaded row's ψ, bound variables renamed. A ROW request names ψ over its places. The machine's package holds rows for the tuple encoding's chains as sys2fol's writer writes them: the numerals 1 to 4, a tuple's entries 0 to 3, and records of one to three entries (decided by the user, 2026-11-23, who waived the check for changes that only shape the machine's proofs) | The writer's chains were most of the remaining quantifier nodes: with decision 6, sys2fol's 13 requests went from 78,387 lines to 37,073. A foundation lemma of a row's form, such as `cls_zero` or `g5_rot`, is read as a row too. |
+| 7 | A row reads any formula, not only a defined predicate: its claim states the reading form at its places ↔ a formula ψ of them, and the machine reads any subformula that is an instance of a loaded row's ψ, bound variables renamed. A ROW request names ψ over its places (decided by the user, 2026-11-23, who waived the check for changes that only shape the machine's proofs) | The writer's chains were most of the remaining quantifier nodes: with decision 6, sys2fol's 13 requests went from 78,387 lines to 37,073. A foundation lemma of a row's form, such as `cls_zero` or `g5_rot`, is read as a row too. |
 | 8 | A quantifier's body is proved in place, at every extension of its record by one entry, once for both directions of its iff, with the facts of only the entries the body reads, in place of decision 6's lemma per stretch; a row is made in the request for each subformula of one to four places whose occurrences cost more lines than the row and its reads (decided by the user, 2026-11-23, under decision 7's waiver) | A quantifier cost about 100 lines and 12 for each variable in scope, and costs about 80 and 3 for each entry its body reads: sys2fol's 13 requests went from 37,073 lines to 20,961, a step relation's set from 22,504 to 10,527. |
 | 9 | A node's iff follows from its children's by a schema proved once in the machine's package (`rows/steps`), cited by one instantiation, in place of the derivation written out at each node; the writer writes each `use` once a proof, and a step of the same text as one written in a scope still open is that step (the user, 2026-11-24: "always try our best to make the proof size small") | sys2fol's 13 requests went from 20,961 lines to 12,168 and from 994 KB to 669 KB, the step relation's set from 10,527 lines to 5,665. |
-
-## 11. For the user to agree: set parameters in place
-
-sys2fol's claims name each number once, at the claim's top (sys2fol `DESIGN.md`, decision 23), so a number is a set
-parameter inside `pmem`, `tuple` and `eq`, where §7 leaves it unread. Sent instead as a variable c with the number's
-members, each number costs an ∃, a ∀ and an ↔, c is in scope for the whole formula, and sysprove carries every number
-back through each set's formula: sys2fol's 11 sets went from 11,357 lines to 17,028, and its set proofs from 2,437 to
-6,368. The change has two parts.
-
-1. **A set parameter in any place**, read as isa2fol's comprehension reads its context
-   (`Sources/Lowering/Comprehension.swift`, `context` and `section`): the parameters' values are each record's leading
-   entries, before x⃗ and the bound variables, so an atom reads a parameter as it reads any variable, in any place,
-   through the rows it already has. The class built is of the full records; the requested class is its section at the
-   record of the parameters' values, made once at the proof's top from base's `cls_snoc`, `cls_section` and `cls_dom3`.
-   The shapes and their claims are unchanged, p⃗ universally quantified. A parameter only on a membership's right side
-   is still `read1`'s witness, at no entry; a class parameter stays on a membership's right side, as a record holds sets.
-2. **Rows over the request's set parameters:** a row made in the request (decision 8) may mention them, held fixed. A
-   record at named numbers, `tuple(q, z2) & (pmem(z0, x, q) & pmem(z1, y, q))`, then has the places q, x and y, and
-   each of its mentions is one row read, as the writer's chains were read through the package's rows (decision 7).
-
-Measured with the numbers bound by an ∃ chain at each formula's top, which reads them as entries as part 1 does, plus
-the chain's own quantifiers, each proof checked: Crossing's State set 747 lines (368 with chains, 935 disguised), its
-step relation 2,706 (2,215; 3,023), BoundedQueue's step relation 7,321 (5,618; 6,783). A named record read atom by
-atom costs more than a chain read through its row, which part 2 restores. Expected with both: no disguise, nothing
-carried back, one read per record mention, and the sets at or under the chains' sizes, measured before sysprove relies
-on them. sysprove's two request rewrites go too: a parameter's members-variable, and `n ≤ c` written `n ∈ succ(c)`.
-
-Other routes: a section per atom, each atom's witness class cut at its parameter by a schema for each row and place, as
-general but with no row shared between mentions; or requests written with chains, as before decision 23, read by the
-chain rows as before, with sysprove proving each set's named form from them, a translation the size of the one above.
+| 10 | A set parameter is read in any place: one read through no row and in no membership's right side is an entry of every record, before x⃗, and the class requested is cut at the record of the parameters' values by base's `member_class`, as isa2fol reads its context. A row may hold set parameters fixed, quantified in its claim, and is read at the request's own. The package's rows of the tuple encoding take their numbers as parameters: a set equal to a number, an entry that is a given set, and records of one to three entries; an entry at a position and a tuple's length are base's `row_app` and `tuples_class` (the user, 2026-11-24, "Go ahead", under decision 7's waiver) | sys2fol's claims name each number once, at the claim's top (sys2fol `DESIGN.md`, decision 23), so a number reaches the machine as a parameter. Sent as a stand-in variable with the number's members, sys2fol's 11 sets grew from 11,357 lines to 17,028; read as entries alone they stay above the chains (Crossing's State set 747 lines against 368), as each mention is read atom by atom, which a row over a parameter reads once. One such row serves every number, where the chains' rows stopped at 4. |
