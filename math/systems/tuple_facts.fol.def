@@ -21,3 +21,5 @@ claim Sys.zero_cong: (forall x. (set(x) -> (forall y. (set(y) -> (eq(x, y) -> (z
 
 claim Sys.tuple_pow: (forall t. (set(t) -> (forall n. (set(n) -> (forall w. (set(w) -> (forall p. (set(p) -> (forall p2. (set(p2) -> (forall p3. (set(p3) -> (tuple(t, n) -> ((forall i. (set(i) -> (elem(i, n) -> elem(i, w)))) -> ((forall i2. (set(i2) -> (forall y. (set(y) -> (pmem(i2, y, t) -> elem(y, w)))))) -> (Pow(w, p) -> (Pow(p, p2) -> (Pow(p2, p3) -> elem(t, p3)))))))))))))))))))
 
+# Sys.tuple4 at numbers named once, the library's definition naming its own (sys2fol DESIGN.md, decision 23).
+claim Sys.tuple4_at: (forall n. (set(n) -> (zero(n) -> (forall n2. (set(n2) -> (nsucc(n, n2) -> (forall n3. (set(n3) -> (nsucc(n2, n3) -> (forall n4. (set(n4) -> (nsucc(n3, n4) -> (forall n5. (set(n5) -> (nsucc(n4, n5) -> (forall x. (set(x) -> (forall x2. (set(x2) -> (forall x3. (set(x3) -> (forall x4. (set(x4) -> (forall x5. (set(x5) -> (Sys.tuple4(x, x2, x3, x4, x5) <-> (tuple(x, n5) & (pmem(n, x2, x) & (pmem(n2, x3, x) & (pmem(n3, x4, x) & pmem(n4, x5, x)))))))))))))))))))))))))))))))

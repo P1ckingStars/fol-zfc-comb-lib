@@ -113,7 +113,7 @@ fol_proof(
     name = "tuple_facts",
     header = "tuple_facts.fol.def",
     proof = "tuple_facts.fol.proof",
-    deps = ["//lib:base"],
+    deps = [":basic"],
 )
 
 # natural_cases: the naturals that are 0 or a successor. rest_pairs: a tuple's entries shifted down by one.

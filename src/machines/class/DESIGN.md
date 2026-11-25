@@ -209,3 +209,33 @@ the machine.
 | 7 | A row reads any formula, not only a defined predicate: its claim states the reading form at its places ↔ a formula ψ of them, and the machine reads any subformula that is an instance of a loaded row's ψ, bound variables renamed. A ROW request names ψ over its places. The machine's package holds rows for the tuple encoding's chains as sys2fol's writer writes them: the numerals 1 to 4, a tuple's entries 0 to 3, and records of one to three entries (decided by the user, 2026-11-23, who waived the check for changes that only shape the machine's proofs) | The writer's chains were most of the remaining quantifier nodes: with decision 6, sys2fol's 13 requests went from 78,387 lines to 37,073. A foundation lemma of a row's form, such as `cls_zero` or `g5_rot`, is read as a row too. |
 | 8 | A quantifier's body is proved in place, at every extension of its record by one entry, once for both directions of its iff, with the facts of only the entries the body reads, in place of decision 6's lemma per stretch; a row is made in the request for each subformula of one to four places whose occurrences cost more lines than the row and its reads (decided by the user, 2026-11-23, under decision 7's waiver) | A quantifier cost about 100 lines and 12 for each variable in scope, and costs about 80 and 3 for each entry its body reads: sys2fol's 13 requests went from 37,073 lines to 20,961, a step relation's set from 22,504 to 10,527. |
 | 9 | A node's iff follows from its children's by a schema proved once in the machine's package (`rows/steps`), cited by one instantiation, in place of the derivation written out at each node; the writer writes each `use` once a proof, and a step of the same text as one written in a scope still open is that step (the user, 2026-11-24: "always try our best to make the proof size small") | sys2fol's 13 requests went from 20,961 lines to 12,168 and from 994 KB to 669 KB, the step relation's set from 10,527 lines to 5,665. |
+
+## 11. For the user to agree: set parameters in place
+
+sys2fol's claims name each number once, at the claim's top (sys2fol `DESIGN.md`, decision 23), so a number is a set
+parameter inside `pmem`, `tuple` and `eq`, where §7 leaves it unread. Sent instead as a variable c with the number's
+members, each number costs an ∃, a ∀ and an ↔, c is in scope for the whole formula, and sysprove carries every number
+back through each set's formula: sys2fol's 11 sets went from 11,357 lines to 17,028, and its set proofs from 2,437 to
+6,368. The change has two parts.
+
+1. **A set parameter in any place**, read as isa2fol's comprehension reads its context
+   (`Sources/Lowering/Comprehension.swift`, `context` and `section`): the parameters' values are each record's leading
+   entries, before x⃗ and the bound variables, so an atom reads a parameter as it reads any variable, in any place,
+   through the rows it already has. The class built is of the full records; the requested class is its section at the
+   record of the parameters' values, made once at the proof's top from base's `cls_snoc`, `cls_section` and `cls_dom3`.
+   The shapes and their claims are unchanged, p⃗ universally quantified. A parameter only on a membership's right side
+   is still `read1`'s witness, at no entry; a class parameter stays on a membership's right side, as a record holds sets.
+2. **Rows over the request's set parameters:** a row made in the request (decision 8) may mention them, held fixed. A
+   record at named numbers, `tuple(q, z2) & (pmem(z0, x, q) & pmem(z1, y, q))`, then has the places q, x and y, and
+   each of its mentions is one row read, as the writer's chains were read through the package's rows (decision 7).
+
+Measured with the numbers bound by an ∃ chain at each formula's top, which reads them as entries as part 1 does, plus
+the chain's own quantifiers, each proof checked: Crossing's State set 747 lines (368 with chains, 935 disguised), its
+step relation 2,706 (2,215; 3,023), BoundedQueue's step relation 7,321 (5,618; 6,783). A named record read atom by
+atom costs more than a chain read through its row, which part 2 restores. Expected with both: no disguise, nothing
+carried back, one read per record mention, and the sets at or under the chains' sizes, measured before sysprove relies
+on them. sysprove's two request rewrites go too: a parameter's members-variable, and `n ≤ c` written `n ∈ succ(c)`.
+
+Other routes: a section per atom, each atom's witness class cut at its parameter by a schema for each row and place, as
+general but with no row shared between mentions; or requests written with chains, as before decision 23, read by the
+chain rows as before, with sysprove proving each set's named form from them, a translation the size of the one above.
